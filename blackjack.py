@@ -50,6 +50,47 @@ def deal(d):
     return d.pop(0)
 
 
+def render_hand(x):
+    for card in x:
+        s = card.suit
+        r = card.rank
+        ren_card = ''
+        if r == Rank.Ace:
+            ren_card = "A"
+        if r == Rank.Two:
+            ren_card = '2'
+        if r == Rank.Three:
+            ren_card = '3'
+        if r == Rank.Four:
+            ren_card = '4'
+        if r == Rank.Five:
+            ren_card = '5'
+        if r == Rank.Six:
+            ren_card = '6'
+        if r == Rank.Seven:
+            ren_card = '7'
+        if r == Rank.Eight:
+            ren_card = '8'
+        if r == Rank.Nine:
+            ren_card = '9'
+        if r == Rank.Ten:
+            ren_card = '10'
+        if r == Rank.Jack:
+            ren_card = "J"
+        if r == Rank.Queen:
+            ren_card = "Q"
+        if r == Rank.King:
+            ren_card = "K"
+        if s == Suit.Spades:
+            print(ren_card + '♠')
+        if s == Suit.Hearts:
+            print(ren_card + '♥')
+        if s == Suit.Diamonds:
+            print(ren_card + '♦')
+        if s == Suit.Clubs:
+            print(ren_card + '♣')
+
+
 def card_point(x):
     n = x.rank
     if n == Rank.Ace:
@@ -87,19 +128,57 @@ def main():
 
     the_house = []
     dealer_card = deal(deck)
+    dealer_card2 = deal(deck)
     the_house.append(dealer_card)
+    the_house.append(dealer_card2)
     house_total = card_point(dealer_card)
+    house_total += card_point(dealer_card2)
+
 
     # add_to_hand(dealt_card)
     dealt_card = deal(deck)
+    dealt_card2 = deal(deck)
     hand.append(dealt_card)
+    hand.append(dealt_card2)
     total = card_point(dealt_card)
+    total += card_point(dealt_card2)
+
 
     # "Play Loop"
     play = True
     while play:
-        print(f'Player 1: {hand}')
-        print(f'The House: {the_house}')
+
+        # Evaluates point for both players to determine a winner and a loop break condition. If a break condition is
+        # not met, continue to beginning of "Play Loop".
+        if total == 21 and house_total == 21:
+            print(f'The House: {house_total, the_house}')
+            print(f'Player 1: {total, hand}: \n WHOA DOUBLE BLACKJACK!')
+            break
+        if total == 21 and house_total != 21:
+            print(f'The House: {house_total, the_house}')
+            print(f'BLACKJACK! {total, hand}: \nYOU WIN!')
+            break
+        if house_total == 21 and total != 21:
+            print(f'Player 1: {total, hand}')
+            print(f'BLACKJACK! {house_total, the_house}: \nHouse wins!')
+            break
+        if house_total < 21 < total:
+            print(f'The House: {house_total, the_house}')
+            print(f'You Bust! {total, hand}: \nHouse Wins!')
+            break
+        if house_total > 21 > total:
+            print(f'Player 1: {total, hand}')
+            print(f'House Busts:{house_total, the_house}: \nYou Win!')
+            break
+        if total > 21 and house_total > 21:
+            print(f'Player has {total, hand} \nThe House has {house_total, the_house} \nboth players Bust!')
+            if __name__ == "__main__":
+                main()
+        print("")
+
+        print(f'Player 1: {render_hand(hand)}')
+        print(f'The House: {render_hand(the_house)}')
+
         print("")
 
         # get_hos is "Hit or Stay".
@@ -107,9 +186,9 @@ def main():
 
         print("")
 
-        # if get_hos is 'y' both player 1 and The House take cards. If 'n' then only The House takes a card. #Beta Version haha
+        # if get_hos is 'y' both player 1 and The House take cards. If 'n' then only The House takes a card. #Beta
+        # Version haha
         if get_hos == 'y':
-
             d = deal(deck)
             hd = deal(deck)
 
@@ -120,38 +199,15 @@ def main():
             house_total += card_point(hd)
 
         if get_hos == 'n':
-            hd = deal(deck)
-            the_house.append(hd)
-            house_total += card_point(hd)
-
-        # Evaluates point for both players to determine a winner and a loop break condition. If a break condition is not met, continue to beginning of "Play Loop".
-        if total == 21 and house_total != 21:
-            print(f'{hand, total}')
-            print('YOU WIN!')
-            break
-        if house_total == 21 and total != 21:
-            print(f'{house_total, the_house}: House wins!')
-            print("")
-            break
-        if total > 21 and house_total < 21:
-            print(total)
-            print('Bust! House Wins')
-            break
-        if house_total > 21 and total < 21:
-            print(house_total)
-            print('House Busts! Player 1 Wins!')
-            print("")
-            break
-        if total > 21 and house_total > 21:
-            print(f'Player has {total} and House has {house_total}, both players Bust!')
-            if __name__ == "__main__":
-                main()
+            continue
         else:
             continue
 
-    # "Leaving Loop": Ask players if they want to play again or not. I am using 'else' instead of "try/except" to get around value errors.
+    # "Leaving Loop": Ask players if they want to play again or not. I am using 'else' instead of "try/except" to get
+    # around value errors.
     leaving = True
     while leaving:
+        print("")
         play_again = input("Would you like to play again? ('y' or 'n'): ")
         if play_again == 'y':
             leaving = False
@@ -159,7 +215,7 @@ def main():
                 main()
         if play_again == 'n':
             print('Goodbye!')
-            break
+            exit()
         else:
             print('Please Choose "y" or "n"!')
             continue
