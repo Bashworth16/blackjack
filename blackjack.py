@@ -51,6 +51,7 @@ def deal(d):
 
 
 def render_hand(x):
+    ren_hand = ''
     for card in x:
         s = card.suit
         r = card.rank
@@ -82,13 +83,18 @@ def render_hand(x):
         if r == Rank.King:
             ren_card = "K"
         if s == Suit.Spades:
-            print(ren_card + '♠')
+            ren_card += '♠ '
+            ren_hand += ren_card
         if s == Suit.Hearts:
-            print(ren_card + '♥')
+            ren_card += '♥ '
+            ren_hand += ren_card
         if s == Suit.Diamonds:
-            print(ren_card + '♦')
+            ren_card += '♦ '
+            ren_hand += ren_card
         if s == Suit.Clubs:
-            print(ren_card + '♣')
+            ren_card += '♣ '
+            ren_hand += ren_card
+    return ren_hand
 
 
 def card_point(x):
@@ -134,7 +140,6 @@ def main():
     house_total = card_point(dealer_card)
     house_total += card_point(dealer_card2)
 
-
     # add_to_hand(dealt_card)
     dealt_card = deal(deck)
     dealt_card2 = deal(deck)
@@ -143,7 +148,6 @@ def main():
     total = card_point(dealt_card)
     total += card_point(dealt_card2)
 
-
     # "Play Loop"
     play = True
     while play:
@@ -151,27 +155,27 @@ def main():
         # Evaluates point for both players to determine a winner and a loop break condition. If a break condition is
         # not met, continue to beginning of "Play Loop".
         if total == 21 and house_total == 21:
-            print(f'The House: {house_total, the_house}')
-            print(f'Player 1: {total, hand}: \n WHOA DOUBLE BLACKJACK!')
+            print(f'The House: {the_house}= {house_total}')
+            print(f'Player 1: {hand}= {total} \n WHOA DOUBLE BLACKJACK!')
             break
         if total == 21 and house_total != 21:
-            print(f'The House: {house_total, the_house}')
-            print(f'BLACKJACK! {total, hand}: \nYOU WIN!')
+            print(f'The House: {render_hand(the_house)}= {house_total}')
+            print(f'BLACKJACK! {render_hand(hand)}= {total} \nYOU WIN!')
             break
         if house_total == 21 and total != 21:
-            print(f'Player 1: {total, hand}')
-            print(f'BLACKJACK! {house_total, the_house}: \nHouse wins!')
+            print(f'Player 1: {render_hand(hand)}= {total}')
+            print(f'BLACKJACK! {render_hand(the_house)}= {house_total} \nHouse wins!')
             break
         if house_total < 21 < total:
-            print(f'The House: {house_total, the_house}')
-            print(f'You Bust! {total, hand}: \nHouse Wins!')
+            print(f'The House: {render_hand(the_house)}= {house_total}')
+            print(f'You Bust! {render_hand(hand)}= {total} \nHouse Wins!')
             break
         if house_total > 21 > total:
-            print(f'Player 1: {total, hand}')
-            print(f'House Busts:{house_total, the_house}: \nYou Win!')
+            print(f'Player 1: {render_hand(hand)}= {total}')
+            print(f'House Busts: {render_hand(the_house)}= {house_total} \nYou Win!')
             break
         if total > 21 and house_total > 21:
-            print(f'Player has {total, hand} \nThe House has {house_total, the_house} \nboth players Bust!')
+            print(f'Player 1: {render_hand(hand)}= {total} \nThe House: {render_hand(the_house)}= {house_total} \nboth players Bust!')
             if __name__ == "__main__":
                 main()
         print("")
