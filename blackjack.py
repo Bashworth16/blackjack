@@ -97,6 +97,55 @@ def render_hand(x):
     return ren_hand
 
 
+def render_dealer(x):
+    first_card = "🂠 "
+    ren_hand = ''
+    for card in x[1:]:
+        s = card.suit
+        r = card.rank
+        ren_card = ''
+        if r == Rank.Ace:
+            ren_card = "A"
+        if r == Rank.Two:
+            ren_card = '2'
+        if r == Rank.Three:
+            ren_card = '3'
+        if r == Rank.Four:
+            ren_card = '4'
+        if r == Rank.Five:
+            ren_card = '5'
+        if r == Rank.Six:
+            ren_card = '6'
+        if r == Rank.Seven:
+            ren_card = '7'
+        if r == Rank.Eight:
+            ren_card = '8'
+        if r == Rank.Nine:
+            ren_card = '9'
+        if r == Rank.Ten:
+            ren_card = '10'
+        if r == Rank.Jack:
+            ren_card = "J"
+        if r == Rank.Queen:
+            ren_card = "Q"
+        if r == Rank.King:
+            ren_card = "K"
+        if s == Suit.Spades:
+            ren_card += '♠ '
+            ren_hand += ren_card
+        if s == Suit.Hearts:
+            ren_card += '♥ '
+            ren_hand += ren_card
+        if s == Suit.Diamonds:
+            ren_card += '♦ '
+            ren_hand += ren_card
+        if s == Suit.Clubs:
+            ren_card += '♣ '
+            ren_hand += ren_card
+
+    return first_card + ren_hand
+
+
 def card_point(x):
     n = x.rank
     if n == Rank.Ace:
@@ -202,7 +251,7 @@ def retotal(h):
 
 def show_cards(p, h):
     print(f'Player 1: {render_hand(p)}')
-    print(f'The House: {render_hand(h)}')
+    print(f'The House: {render_dealer(h)}')
     print("")
 
 
