@@ -158,25 +158,31 @@ def get_winner(pt, ph, ht, hh):
         if __name__ == "__main__":
             main()
 
-# get_hos is "Hit or Stay".
+# get_hos is "Hit or Stay" t = total, ht = house total, h = hand, th = the_house
 
 
-def get_hit_or_stay(t, ht):
+def get_hit_or_stay(t, ht, d, h, th):
     get_hos = input(f'Your Total is {t} and The House has {ht}, would you like to Hit? ("y" or "n"): ')
-    return get_hos
+    if get_hos == 'y':
+        x = deal(d)
+        hd = deal(d)
+        h.append(x)
+        th.append(hd)
+        t += card_point(x)
+        ht += card_point(hd)
+    if get_hos == 'n':
+        pass
+    else:
+        pass
 
 
 def play_again():
-    p = input("Would you like to play again? ('y' or 'n'): ")
-    return p
-
-
-def leaving(a):
-    leave = True
-    while leave:
+    leaving = True
+    while leaving:
+        a = input("Would you like to play again? ('y' or 'n'): ")
         print("")
         if a == 'y':
-            leave = False
+            leaving = False
             if __name__ == "__main__":
                 main()
         if a == 'n':
@@ -187,53 +193,49 @@ def leaving(a):
             continue
 
 
+def retotal(h):
+    new_total = 0
+    for card in h:
+        new_total += card_point(card)
+    return new_total
+
+
+def show_cards(p, h):
+    print(f'Player 1: {render_hand(p)}')
+    print(f'The House: {render_hand(h)}')
+    print("")
+
+
+def initial_deal(d, h, th):
+    count = 0
+    while count < 2:
+        count += 1
+        h.append(deal(d))
+        th.append(deal(d))
+
+
 def main():
     deck = make_deck()
     random.shuffle(deck)
     hand = []
     the_house = []
 
-    dealer_card = deal(deck)
-    dealer_card2 = deal(deck)
-    the_house.append(dealer_card)
-    the_house.append(dealer_card2)
-    house_total = card_point(dealer_card)
-    house_total += card_point(dealer_card2)
-
-    # add_to_hand(dealt_card)
-    dealt_card = deal(deck)
-    dealt_card2 = deal(deck)
-    hand.append(dealt_card)
-    hand.append(dealt_card2)
-    total = card_point(dealt_card)
-    total += card_point(dealt_card2)
+    initial_deal(deck, hand, the_house)
+    total = retotal(hand)
+    house_total = retotal(the_house)
 
     # "Play Loop"
     play = True
     while play:
-        print(f'Player 1: {render_hand(hand)}')
-        print(f'The House: {render_hand(the_house)}')
-        print("")
-
+        show_cards(hand, the_house)
         winner = get_winner(total, hand, house_total, the_house)
         if winner:
             break
+        get_hit_or_stay(total, house_total, deck, hand, the_house)
+        total = retotal(hand)
+        house_total = retotal(the_house)
 
-        get_hos = get_hit_or_stay(total, house_total)
-        if get_hos == 'y':
-            d = deal(deck)
-            hd = deal(deck)
-            hand.append(d)
-            the_house.append(hd)
-            total += card_point(d)
-            house_total += card_point(hd)
-        if get_hos == 'n':
-            pass
-        else:
-            pass
-
-    response = play_again()
-    leaving(response)
+    play_again()
 
 
 if __name__ == "__main__":
