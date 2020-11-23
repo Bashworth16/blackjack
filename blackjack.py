@@ -126,13 +126,67 @@ def card_point(x):
     if n == Rank.King:
         return 10
 
+# Evaluates point for both players to determine a winner and a loop break condition. If a break condition is
+# not met, continue to beginning of "Play Loop".
+def get_winner(pt, ph, ht, hh):
+    if pt == 21 and ht == 21:
+        print(f'The House: {hh}= {ht}')
+        print(f'Player 1: {ph}= {pt} \n DOUBLE BLACKJACK!')
+        return True
+    if pt == 21 and ht != 21:
+        print(f'The House: {render_hand(hh)}= {ht}')
+        print(f'BLACKJACK! {render_hand(ph)}= {pt} \nYOU WIN!')
+        return True
+    if ht == 21 and pt != 21:
+        print(f'Player 1: {render_hand(ph)}= {pt}')
+        print(f'BLACKJACK! {render_hand(hh)}= {ht} \nHouse wins!')
+        return True
+    if ht < 21 < pt:
+        print(f'The House: {render_hand(hh)}= {ht}')
+        print(f'You Bust! {render_hand(ph)}= {pt} \nHouse Wins!')
+        return True
+    if ht > 21 > pt:
+        print(f'Player 1: {render_hand(ph)}= {pt}')
+        print(f'House Busts: {render_hand(hh)}= {ht} \nYou Win!')
+        return True
+    if pt > 21 and ht > 21:
+        print(
+            f'Player 1: {render_hand(ph)}= {pt} \nThe House: {render_hand(hh)}= {ht} \nboth players Bust!')
+        print("")
+        if __name__ == "__main__":
+            main()
+
+# get_hos is "Hit or Stay".
+def get_hit_or_stay(t, ht):
+    get_hos = input(f'Your Total is {t} and The House has {ht}, would you like to Hit? ("y" or "n"): ')
+    return get_hos
+
+def play_again():
+    play_again = input("Would you like to play again? ('y' or 'n'): ")
+    return play_again
+
+def leaving(a):
+    leaving = True
+    while leaving:
+        print("")
+        play_again = input("Would you like to play again? ('y' or 'n'): ")
+        if play_again == 'y':
+            leaving = False
+            if __name__ == "__main__":
+                main()
+        if play_again == 'n':
+            print('Goodbye!')
+            exit()
+        else:
+            print('Please Choose "y" or "n"!')
+            continue
 
 def main():
     deck = make_deck()
     random.shuffle(deck)
     hand = []
-
     the_house = []
+
     dealer_card = deal(deck)
     dealer_card2 = deal(deck)
     the_house.append(dealer_card)
@@ -151,78 +205,31 @@ def main():
     # "Play Loop"
     play = True
     while play:
-
-        # Evaluates point for both players to determine a winner and a loop break condition. If a break condition is
-        # not met, continue to beginning of "Play Loop".
-        if total == 21 and house_total == 21:
-            print(f'The House: {the_house}= {house_total}')
-            print(f'Player 1: {hand}= {total} \n WHOA DOUBLE BLACKJACK!')
-            break
-        if total == 21 and house_total != 21:
-            print(f'The House: {render_hand(the_house)}= {house_total}')
-            print(f'BLACKJACK! {render_hand(hand)}= {total} \nYOU WIN!')
-            break
-        if house_total == 21 and total != 21:
-            print(f'Player 1: {render_hand(hand)}= {total}')
-            print(f'BLACKJACK! {render_hand(the_house)}= {house_total} \nHouse wins!')
-            break
-        if house_total < 21 < total:
-            print(f'The House: {render_hand(the_house)}= {house_total}')
-            print(f'You Bust! {render_hand(hand)}= {total} \nHouse Wins!')
-            break
-        if house_total > 21 > total:
-            print(f'Player 1: {render_hand(hand)}= {total}')
-            print(f'House Busts: {render_hand(the_house)}= {house_total} \nYou Win!')
-            break
-        if total > 21 and house_total > 21:
-            print(f'Player 1: {render_hand(hand)}= {total} \nThe House: {render_hand(the_house)}= {house_total} \nboth players Bust!')
-            if __name__ == "__main__":
-                main()
-        print("")
-
         print(f'Player 1: {render_hand(hand)}')
         print(f'The House: {render_hand(the_house)}')
-
         print("")
 
-        # get_hos is "Hit or Stay".
-        get_hos = input(f'Your Total is {total} and The House has {house_total}, would you like to Hit? ("y" or "n"): ')
+        winner = get_winner(total, hand, house_total, the_house)
+        if winner == True:
+            break
 
-        print("")
-
-        # if get_hos is 'y' both player 1 and The House take cards. If 'n' then only The House takes a card. #Beta
-        # Version haha
+        get_hos = get_hit_or_stay(total, house_total)
         if get_hos == 'y':
             d = deal(deck)
             hd = deal(deck)
-
             hand.append(d)
             the_house.append(hd)
-
             total += card_point(d)
             house_total += card_point(hd)
-
         if get_hos == 'n':
-            continue
+            pass
         else:
-            continue
+            pass
 
-    # "Leaving Loop": Ask players if they want to play again or not. I am using 'else' instead of "try/except" to get
-    # around value errors.
-    leaving = True
-    while leaving:
-        print("")
-        play_again = input("Would you like to play again? ('y' or 'n'): ")
-        if play_again == 'y':
-            leaving = False
-            if __name__ == "__main__":
-                main()
-        if play_again == 'n':
-            print('Goodbye!')
-            exit()
-        else:
-            print('Please Choose "y" or "n"!')
-            continue
+    response = play_again()
+    leaving(response)
+
+
 
 
 if __name__ == "__main__":
