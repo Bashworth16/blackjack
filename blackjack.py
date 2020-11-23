@@ -128,6 +128,8 @@ def card_point(x):
 
 # Evaluates point for both players to determine a winner and a loop break condition. If a break condition is
 # not met, continue to beginning of "Play Loop".
+
+
 def get_winner(pt, ph, ht, hh):
     if pt == 21 and ht == 21:
         print(f'The House: {hh}= {ht}')
@@ -157,29 +159,33 @@ def get_winner(pt, ph, ht, hh):
             main()
 
 # get_hos is "Hit or Stay".
+
+
 def get_hit_or_stay(t, ht):
     get_hos = input(f'Your Total is {t} and The House has {ht}, would you like to Hit? ("y" or "n"): ')
     return get_hos
 
+
 def play_again():
-    play_again = input("Would you like to play again? ('y' or 'n'): ")
-    return play_again
+    p = input("Would you like to play again? ('y' or 'n'): ")
+    return p
+
 
 def leaving(a):
-    leaving = True
-    while leaving:
+    leave = True
+    while leave:
         print("")
-        play_again = input("Would you like to play again? ('y' or 'n'): ")
-        if play_again == 'y':
-            leaving = False
+        if a == 'y':
+            leave = False
             if __name__ == "__main__":
                 main()
-        if play_again == 'n':
+        if a == 'n':
             print('Goodbye!')
             exit()
         else:
             print('Please Choose "y" or "n"!')
             continue
+
 
 def main():
     deck = make_deck()
@@ -210,7 +216,7 @@ def main():
         print("")
 
         winner = get_winner(total, hand, house_total, the_house)
-        if winner == True:
+        if winner:
             break
 
         get_hos = get_hit_or_stay(total, house_total)
@@ -228,8 +234,6 @@ def main():
 
     response = play_again()
     leaving(response)
-
-
 
 
 if __name__ == "__main__":
