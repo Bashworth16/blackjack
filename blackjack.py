@@ -202,7 +202,7 @@ def get_winner(pt, ph, ht, hh):
         return True
     if pt > 21 and ht > 21:
         print(
-            f'Player 1: {render_hand(ph)}= {pt} \nThe House: {render_hand(hh)}= {ht} \nboth players Bust!')
+            f'Player 1: {render_hand(ph)}= {pt} \nPlayers 1 Busts!')
         print("")
         if __name__ == "__main__":
             main()
@@ -211,7 +211,7 @@ def get_winner(pt, ph, ht, hh):
 
 
 def get_hit_or_stay(t, ht, d, h, th):
-    get_hos = input(f'Your Total is {t} and The House has {ht}, would you like to Hit? ("y" or "n"): ')
+    get_hos = input(f'Your Total is {t}, would you like to Hit? ("y" or "n"): ')
     if get_hos == 'y':
         x = deal(d)
         hd = deal(d)
