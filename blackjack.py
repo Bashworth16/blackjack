@@ -210,15 +210,12 @@ def get_winner(pt, ph, ht, hh):
 # get_hos is "Hit or Stay" t = total, ht = house total, h = hand, th = the_house
 
 
-def get_hit_or_stay(t, ht, d, h, th):
+def get_hit_or_stay(t, d, h):
     get_hos = input(f'Your Total is {t}, would you like to Hit? ("y" or "n"): ')
     if get_hos == 'y':
         x = deal(d)
-        hd = deal(d)
         h.append(x)
-        th.append(hd)
         t += card_point(x)
-        ht += card_point(hd)
     if get_hos == 'n':
         pass
     else:
@@ -280,7 +277,7 @@ def main():
         winner = get_winner(total, hand, house_total, the_house)
         if winner:
             break
-        get_hit_or_stay(total, house_total, deck, hand, the_house)
+        get_hit_or_stay(total, deck, hand)
         total = retotal(hand)
         house_total = retotal(the_house)
 
