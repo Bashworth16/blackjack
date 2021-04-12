@@ -179,47 +179,81 @@ def card_point(x):
 # not met, continue to beginning of "Play Loop".
 
 
-def get_winner(pt, ph, ht, hh):
-    if pt == 21 and ht == 21:
-        print(f'The House: {hh}= {ht}')
-        print(f'Player 1: {ph}= {pt} \n DOUBLE BLACKJACK!')
+def get_winner(player_total, player_hand, house_total, house_hand):
+    if player_total == 21 and house_total == 21:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n House Wins!')
         return True
-    if pt == 21 and ht != 21:
-        print(f'The House: {render_hand(hh)}= {ht}')
-        print(f'BLACKJACK! {render_hand(ph)}= {pt} \nYOU WIN!')
+    if player_total == 21 and house_total != 21:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'BLACKJACK! {render_hand(player_hand)}= {player_total} \nYOU WIN!')
         return True
-    if ht == 21 and pt != 21:
-        print(f'Player 1: {render_hand(ph)}= {pt}')
-        print(f'BLACKJACK! {render_hand(hh)}= {ht} \nHouse wins!')
+    if house_total == 21 and player_total != 21:
+        print(f'Player 1: {render_hand(player_hand)}= {player_total}')
+        print(f'BLACKJACK! {render_hand(house_hand)}= {house_total} \nHouse wins!')
         return True
-    if ht < 21 < pt:
-        print(f'The House: {render_hand(hh)}= {ht}')
-        print(f'You Bust! {render_hand(ph)}= {pt} \nHouse Wins!')
+    if house_total < 21 < player_total:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'You Bust! {render_hand(player_hand)}= {player_total} \nHouse Wins!')
         return True
-    if ht > 21 > pt:
-        print(f'Player 1: {render_hand(ph)}= {pt}')
-        print(f'House Busts: {render_hand(hh)}= {ht} \nYou Win!')
+    if house_total > 21 > player_total:
+        print(f'Player 1: {render_hand(player_hand)}= {player_total}')
+        print(f'House Busts: {render_hand(house_hand)}= {house_total} \nYou Win!')
         return True
-    if pt > 21 and ht > 21:
+    if player_total > 21 and house_total > 21:
         print(
-            f'Player 1: {render_hand(ph)}= {pt} \nPlayers 1 Busts!')
+            f'Player 1: {render_hand(player_hand)}= {player_total} \nPlayers 1 Busts!')
         print("")
-        if __name__ == "__main__":
-            main()
+    if player_total < house_total < 21:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n House Wins!')
+        return True
+    if player_total > house_total < 21:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n YOU Win!')
+        return True
+    if __name__ == "__main__":
+        main()
+
 
 # get_hos is "Hit or Stay" t = total, ht = house total, h = hand, th = the_house
 
 
-def get_hit_or_stay(t, d, h):
-    get_hos = input(f'Your Total is {t}, would you like to Hit? ("y" or "n"): ')
-    if get_hos == 'y':
-        x = deal(d)
-        h.append(x)
-        t += card_point(x)
-    if get_hos == 'n':
-        pass
+def check_winner(total, house_total):
+    player = total
+    house = house_total
+    if player > house:
+        print(f'{player} beats {house} Player 1 wins.')
+    if house > player:
+        print(f'{house} beats {player} House wins.')
+
+
+def house_hit(house_total):
+    while house_total < 16:
+        return True
+
+
+def hit(hit_response, total, hand, deck, house_total, house_hand):
+    hit = hit_response
+    if hit == 'y':
+        x = deal(deck)
+        hand.append(x)
+        total += card_point(x)
+    elif hit == 'n':
+        while house_hit(house_total) == True:
+            x = deal(deck)
+            house_hand.append(x)
+            house_total += card_point(x)
+            if house_total > 16:
+                break
     else:
+        print("Please choose 'y' or 'n'")
         pass
+
+
+def get_hit_or_stay(total):
+    get_hos = input(f'Your Total is {total}, would you like to Hit? ("y" or "n"): ')
+    return get_hos
 
 
 def play_again():
@@ -274,12 +308,15 @@ def main():
     play = True
     while play:
         show_cards(hand, the_house)
+        hit_or_not = get_hit_or_stay(total)
+        hit(hit_or_not, total, hand, deck, house_total, the_house)
+        total = retotal(hand)
+        house_total = retotal(the_house)
+        if hit_or_not == 'y' and total < 21:
+            continue
         winner = get_winner(total, hand, house_total, the_house)
         if winner:
             break
-        get_hit_or_stay(total, deck, hand)
-        total = retotal(hand)
-        house_total = retotal(the_house)
 
     play_again()
 
