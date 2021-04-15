@@ -146,10 +146,43 @@ def render_dealer(x):
     return first_card + ren_hand
 
 
-def card_point(x):
+def card_points_for_card_points(x):
     n = x.rank
     if n == Rank.Ace:
         return 11
+    if n == Rank.Two:
+        return 2
+    if n == Rank.Three:
+        return 3
+    if n == Rank.Four:
+        return 4
+    if n == Rank.Five:
+        return 5
+    if n == Rank.Six:
+        return 6
+    if n == Rank.Seven:
+        return 7
+    if n == Rank.Eight:
+        return 8
+    if n == Rank.Nine:
+        return 9
+    if n == Rank.Ten:
+        return 10
+    if n == Rank.Jack:
+        return 10
+    if n == Rank.Queen:
+        return 10
+    if n == Rank.King:
+        return 10
+
+
+def card_point(x, total=0):
+    n = x.rank
+    if n == Rank.Ace:
+        if total >= 11:
+            return 1
+        if total <= 10:
+            return 11
     if n == Rank.Two:
         return 2
     if n == Rank.Three:
@@ -229,7 +262,7 @@ def check_winner(total, house_total):
 
 
 def house_hit(house_total):
-    while house_total < 16:
+    while house_total <= 16:
         return True
 
 
@@ -248,11 +281,12 @@ def hit(hit_response, total, hand, deck, house_total, house_hand):
                 break
     else:
         print("Please choose 'y' or 'n'")
-        pass
+        get_hit_or_stay(total)
 
 
 def get_hit_or_stay(total):
     get_hos = input(f'Your Total is {total}, would you like to Hit? ("y" or "n"): ')
+    print("")
     return get_hos
 
 
@@ -273,10 +307,10 @@ def play_again():
             continue
 
 
-def retotal(h):
+def retotal(hand, total=0):
     new_total = 0
-    for card in h:
-        new_total += card_point(card)
+    for card in hand:
+        new_total += card_points_for_card_points(card)
     return new_total
 
 
@@ -310,8 +344,8 @@ def main():
         show_cards(hand, the_house)
         hit_or_not = get_hit_or_stay(total)
         hit(hit_or_not, total, hand, deck, house_total, the_house)
-        total = retotal(hand)
-        house_total = retotal(the_house)
+        total = retotal(hand, total)
+        house_total = retotal(the_house, house_total)
         if hit_or_not == 'y' and total < 21:
             continue
         winner = get_winner(total, hand, house_total, the_house)
