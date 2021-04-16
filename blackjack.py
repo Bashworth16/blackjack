@@ -146,42 +146,17 @@ def render_dealer(x):
     return first_card + ren_hand
 
 
-def card_points_for_card_points(x):
-    n = x.rank
-    if n == Rank.Ace:
-        return 11
-    if n == Rank.Two:
-        return 2
-    if n == Rank.Three:
-        return 3
-    if n == Rank.Four:
-        return 4
-    if n == Rank.Five:
-        return 5
-    if n == Rank.Six:
-        return 6
-    if n == Rank.Seven:
-        return 7
-    if n == Rank.Eight:
-        return 8
-    if n == Rank.Nine:
-        return 9
-    if n == Rank.Ten:
-        return 10
-    if n == Rank.Jack:
-        return 10
-    if n == Rank.Queen:
-        return 10
-    if n == Rank.King:
-        return 10
+def card_count(x):
+    return len(x)
 
 
-def card_point(x, total=0):
+def card_point(hand, x, total=0):
     n = x.rank
+    count = card_count(hand)
     if n == Rank.Ace:
-        if total >= 11:
+        if (total + 11) > 21 or count > 2:
             return 1
-        if total <= 10:
+        elif total < 11:
             return 11
     if n == Rank.Two:
         return 2
@@ -249,34 +224,22 @@ def get_winner(player_total, player_hand, house_total, house_hand):
         main()
 
 
-# get_hos is "Hit or Stay" t = total, ht = house total, h = hand, th = the_house
-
-
-def check_winner(total, house_total):
-    player = total
-    house = house_total
-    if player > house:
-        print(f'{player} beats {house} Player 1 wins.')
-    if house > player:
-        print(f'{house} beats {player} House wins.')
-
-
 def house_hit(house_total):
-    while house_total <= 16:
+    while house_total <= 17:
         return True
 
 
 def hit(hit_response, total, hand, deck, house_total, house_hand):
-    hit = hit_response
-    if hit == 'y':
+    h = hit_response
+    if h == 'y':
         x = deal(deck)
         hand.append(x)
-        total += card_point(x)
-    elif hit == 'n':
-        while house_hit(house_total) == True:
+        total += card_point(hand, x, total)
+    elif h == 'n':
+        while house_hit(house_total):
             x = deal(deck)
             house_hand.append(x)
-            house_total += card_point(x)
+            house_total += card_point(house_hand, x, house_total)
             if house_total > 16:
                 break
     else:
@@ -310,7 +273,14 @@ def play_again():
 def retotal(hand, total=0):
     new_total = 0
     for card in hand:
-        new_total += card_points_for_card_points(card)
+        new_total += card_point(hand, card)
+    return new_total
+
+
+def init_total(hand):
+    new_total = 0
+    for card in hand:
+        new_total += card_point(hand, card)
     return new_total
 
 
@@ -328,6 +298,14 @@ def initial_deal(d, h, th):
         th.append(deal(d))
 
 
+def check_blackjack(total):
+    if total != 21:
+        return True
+    if total == 21:
+        print(f'{total} BLACKJACK!')
+        return False
+
+
 def main():
     deck = make_deck()
     random.shuffle(deck)
@@ -335,19 +313,42 @@ def main():
     the_house = []
 
     initial_deal(deck, hand, the_house)
-    total = retotal(hand)
-    house_total = retotal(the_house)
+    total = init_total(hand)
+    house_total = init_total(the_house)
 
     # "Play Loop"
     play = True
     while play:
+        # Displays cards to player.
         show_cards(hand, the_house)
+
+        # If blackjack is dealt on the first hand the player is declared winner and the play cycle is broken.
+        # this stops the game from asking if you want to hit or not after a blackjack has already been dealt.
+        play = check_blackjack(total)
+        if play == False:
+            break
+
+        # Gets user input to hit or not on line 292. Total is used as an arg to display the total in the message.
         hit_or_not = get_hit_or_stay(total)
+
+        # Line 274 The users input from hit_or_not is passed as the first arg.
+        #       if the input == y, a new card is added tp
+        #       hand and the points are totaled at card_point(x) on line 184.
+        #       if the input == n, we use the 5th arg house_hit(house_total) line 269 to see
+        #       if the house is below 16 points and should take cards.
+        #       if it is neither, hit() asks for the proper input.
+        #       other args are used for dealing new cards and adding them to the players hands.
         hit(hit_or_not, total, hand, deck, house_total, the_house)
+
+        # Gets the players totals with retotal() on line 315
         total = retotal(hand, total)
         house_total = retotal(the_house, house_total)
+
+        # If the player is asking for more cards, continue loop, don't check for winner
         if hit_or_not == 'y' and total < 21:
             continue
+
+        # Compares players totals to determine a winner. hand args are passed for the winner display message.
         winner = get_winner(total, hand, house_total, the_house)
         if winner:
             break
