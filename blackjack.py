@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import enum
 import random
 
@@ -150,14 +152,10 @@ def card_count(x):
     return len(x)
 
 
-def card_point(hand, x, total=0):
+def card_point(x):
     n = x.rank
-    count = card_count(hand)
     if n == Rank.Ace:
-        if (total + 11) > 21 or count > 2:
-            return 1
-        elif total < 11:
-            return 11
+        return 11
     if n == Rank.Two:
         return 2
     if n == Rank.Three:
@@ -225,8 +223,10 @@ def get_winner(player_total, player_hand, house_total, house_hand):
 
 
 def house_hit(house_total):
-    while house_total <= 17:
+    if house_total < 17:
         return True
+    else:
+        return False
 
 
 def hit(hit_response, total, hand, deck, house_total, house_hand):
@@ -234,14 +234,13 @@ def hit(hit_response, total, hand, deck, house_total, house_hand):
     if h == 'y':
         x = deal(deck)
         hand.append(x)
-        total += card_point(hand, x, total)
+        total += hand_total(hand)
     elif h == 'n':
-        while house_hit(house_total):
+        while house_total < 17:
             x = deal(deck)
             house_hand.append(x)
-            house_total += card_point(house_hand, x, house_total)
-            if house_total > 16:
-                break
+            house_total += hand_total(house_hand)
+            continue
     else:
         print("Please choose 'y' or 'n'")
         get_hit_or_stay(total)
@@ -270,18 +269,30 @@ def play_again():
             continue
 
 
-def retotal(hand, total=0):
-    new_total = 0
-    for card in hand:
-        new_total += card_point(hand, card)
-    return new_total
+def hand_total(hand):
+    total = 0
 
-
-def init_total(hand):
-    new_total = 0
+    # Evaluate card points and add them to total.
     for card in hand:
-        new_total += card_point(hand, card)
-    return new_total
+        r = card.rank
+        points = card_point(card)
+
+        # If an Ace (11) would cause a bust, change to 1. If not Ace remains 11.
+        if r == Rank.Ace:
+            if total + points > 21:
+                total -= 10
+        total += points
+
+    # If you have more than 2 cards in hand and total > 21, change each Ace to 1.
+    if len(hand) > 2 and total > 21:
+        total = 0
+        for card in hand:
+            points = card_point(card)
+            total += points
+            x = card.rank
+            if x == Rank.Ace:
+                total -= 10
+    return total
 
 
 def show_cards(p, h):
@@ -313,9 +324,8 @@ def main():
     the_house = []
 
     initial_deal(deck, hand, the_house)
-    total = init_total(hand)
-    house_total = init_total(the_house)
-
+    total = hand_total(hand)
+    house_total = hand_total(the_house)
     # "Play Loop"
     play = True
     while play:
@@ -324,8 +334,7 @@ def main():
 
         # If blackjack is dealt on the first hand the player is declared winner and the play cycle is broken.
         # this stops the game from asking if you want to hit or not after a blackjack has already been dealt.
-        play = check_blackjack(total)
-        if play == False:
+        if check_blackjack(total) == False:
             break
 
         # Gets user input to hit or not on line 292. Total is used as an arg to display the total in the message.
@@ -341,8 +350,8 @@ def main():
         hit(hit_or_not, total, hand, deck, house_total, the_house)
 
         # Gets the players totals with retotal() on line 315
-        total = retotal(hand, total)
-        house_total = retotal(the_house, house_total)
+        total = hand_total(hand)
+        house_total = hand_total(the_house)
 
         # If the player is asking for more cards, continue loop, don't check for winner
         if hit_or_not == 'y' and total < 21:
