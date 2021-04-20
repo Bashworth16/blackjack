@@ -1,4 +1,4 @@
-from blackjack import Card, Suit, Rank, card_point, retotal
+from blackjack import Card, Suit, Rank, card_point, hand_total
 
 A = Card(Rank.Ace, Suit.Spades)
 r2 = Card(Rank.Two, Suit.Spades)
@@ -22,13 +22,13 @@ def test_card_point():
     assert card_point(Card(Rank.Jack, Suit.Clubs)) == 10
 
 
-def test_retotal():
-    assert retotal([A, r9, r3]) == 13
-    assert retotal([A, A]) == 12
-    assert retotal([A, r2, r4, A, r4]) == 12
-    assert retotal([A, r5, r6]) == 12
-    assert retotal([J, A]) == 21
-    assert retotal ([K, K, A]) == 21
-    assert retotal([A, A, r3]) == 15
-    assert retotal([A, A, A, A, A, A, A, A, A, A, A, A]) == 12
-    assert retotal([A, A, A, A, A, A, A, A, A, A, A]) == 21
+def test_hand_total():
+    assert hand_total([A, r9, r3]) == 13
+    assert hand_total([A, A]) == 12
+    assert hand_total([A, r2, r4, A, r4]) == 12
+    assert hand_total([A, r5, r6]) == 12
+    assert hand_total([J, A]) == 21
+    assert hand_total([K, K, A]) == 21
+    assert hand_total([A, A, r3]) == 15
+    assert hand_total([A, A, A, A, A, A, A, A, A, A, A, A]) == 12
+    assert hand_total([A, A, A, A, A, A, A, A, A, A, A]) == 21
