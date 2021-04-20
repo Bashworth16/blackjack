@@ -275,13 +275,12 @@ def hand_total(hand):
     # Evaluate card points and add them to total.
     for card in hand:
         r = card.rank
-        points = card_point(card)
+        total += card_point(card)
 
         # If an Ace (11) would cause a bust, change to 1. If not Ace remains 11.
-        if r == Rank.Ace:
-            if total + points > 21:
-                total -= 10
-        total += points
+        if r == Rank.Ace and total > 21:
+            total -= 10
+
 
     # If you have more than 2 cards in hand and total > 21, change each Ace to 1.
     if len(hand) > 2 and total > 21:
