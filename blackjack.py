@@ -222,25 +222,25 @@ def get_winner(player_total, player_hand, house_total, house_hand):
         main()
 
 
-def house_hit(house_total):
-    if house_total < 17:
-        return True
-    else:
-        return False
+def house_hit(house_total, house_hand, deck):
+    while house_total < 17:
+        x = deal(deck)
+        house_hand.append(x)
+        house_total += hand_total(house_hand)
+
+
+def hit_player(total, hand, deck):
+    x = deal(deck)
+    hand.append(x)
+    total += hand_total(hand)
 
 
 def hit(hit_response, total, hand, deck, house_total, house_hand):
     h = hit_response
     if h == 'y':
-        x = deal(deck)
-        hand.append(x)
-        total += hand_total(hand)
+        hit_player(total, hand, deck)
     elif h == 'n':
-        while house_total < 17:
-            x = deal(deck)
-            house_hand.append(x)
-            house_total += hand_total(house_hand)
-            continue
+        house_hit(house_total, house_hand, deck)
     else:
         print("Please choose 'y' or 'n'")
         get_hit_or_stay(total)
@@ -281,9 +281,7 @@ def hand_total(hand):
         if r == Rank.Ace and total > 21:
             total -= 10
 
-
-    # If you have more than 2 cards in hand and total > 21, change each Ace to 1.
-    if len(hand) > 2 and total > 21:
+    if total > 21:
         total = 0
         for card in hand:
             points = card_point(card)
