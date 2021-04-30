@@ -148,10 +148,6 @@ def render_dealer(x):
     return first_card + ren_hand
 
 
-def card_count(x):
-    return len(x)
-
-
 def card_point(x):
     n = x.rank
     if n == Rank.Ace:
@@ -214,7 +210,7 @@ def get_winner(player_total, player_hand, house_total, house_hand):
         print(f'The House: {render_hand(house_hand)}= {house_total}')
         print(f'Player 1: {render_hand(player_hand)}= {player_total} \n House Wins!')
         return True
-    if player_total > house_total < 21:
+    if player_total > house_total < 21 and house_total > 17:
         print(f'The House: {render_hand(house_hand)}= {house_total}')
         print(f'Player 1: {render_hand(player_hand)}= {player_total} \n YOU Win!')
         return True
@@ -243,7 +239,8 @@ def hit(hit_response, total, hand, deck, house_total, house_hand):
         house_hit(house_total, house_hand, deck)
     else:
         print("Please choose 'y' or 'n'")
-        get_hit_or_stay(total)
+        h = get_hit_or_stay(total)
+
 
 
 def get_hit_or_stay(total):
@@ -261,7 +258,7 @@ def play_again():
             leaving = False
             if __name__ == "__main__":
                 main()
-        if a == 'n':
+        elif a == 'n':
             print('Goodbye!')
             exit()
         else:
@@ -269,26 +266,22 @@ def play_again():
             continue
 
 
+
 def hand_total(hand):
     total = 0
+    ace_count = 0
 
     # Evaluate card points and add them to total.
     for card in hand:
         r = card.rank
         total += card_point(card)
 
-        # If an Ace (11) would cause a bust, change to 1. If not Ace remains 11.
-        if r == Rank.Ace and total > 21:
+        if r == Rank.Ace:
+            ace_count += 1
+
+        if ace_count > 0 and total > 21:
             total -= 10
 
-    if total > 21:
-        total = 0
-        for card in hand:
-            points = card_point(card)
-            total += points
-            x = card.rank
-            if x == Rank.Ace:
-                total -= 10
     return total
 
 
