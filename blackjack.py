@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import enum
 import random
 
@@ -179,50 +181,72 @@ def card_point(x):
 # not met, continue to beginning of "Play Loop".
 
 
-def get_winner(pt, ph, ht, hh):
-    if pt == 21 and ht == 21:
-        print(f'The House: {hh}= {ht}')
-        print(f'Player 1: {ph}= {pt} \n DOUBLE BLACKJACK!')
+def get_winner(player_total, player_hand, house_total, house_hand):
+    if player_total == 21 and house_total == 21:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n House Wins!')
         return True
-    if pt == 21 and ht != 21:
-        print(f'The House: {render_hand(hh)}= {ht}')
-        print(f'BLACKJACK! {render_hand(ph)}= {pt} \nYOU WIN!')
+    if player_total == 21 and house_total != 21:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'BLACKJACK! {render_hand(player_hand)}= {player_total} \nYOU WIN!')
         return True
-    if ht == 21 and pt != 21:
-        print(f'Player 1: {render_hand(ph)}= {pt}')
-        print(f'BLACKJACK! {render_hand(hh)}= {ht} \nHouse wins!')
+    if house_total == 21 and player_total != 21:
+        print(f'Player 1: {render_hand(player_hand)}= {player_total}')
+        print(f'BLACKJACK! {render_hand(house_hand)}= {house_total} \nHouse wins!')
         return True
-    if ht < 21 < pt:
-        print(f'The House: {render_hand(hh)}= {ht}')
-        print(f'You Bust! {render_hand(ph)}= {pt} \nHouse Wins!')
+    if house_total < 21 < player_total:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'You Bust! {render_hand(player_hand)}= {player_total} \nHouse Wins!')
         return True
-    if ht > 21 > pt:
-        print(f'Player 1: {render_hand(ph)}= {pt}')
-        print(f'House Busts: {render_hand(hh)}= {ht} \nYou Win!')
+    if house_total > 21 > player_total:
+        print(f'Player 1: {render_hand(player_hand)}= {player_total}')
+        print(f'House Busts: {render_hand(house_hand)}= {house_total} \nYou Win!')
         return True
-    if pt > 21 and ht > 21:
+    if player_total > 21 and house_total > 21:
         print(
-            f'Player 1: {render_hand(ph)}= {pt} \nThe House: {render_hand(hh)}= {ht} \nboth players Bust!')
+            f'Player 1: {render_hand(player_hand)}= {player_total} \nPlayers 1 Busts!')
         print("")
-        if __name__ == "__main__":
-            main()
+    if player_total < house_total < 21:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n House Wins!')
+        return True
+    if player_total > house_total < 21 and house_total > 17:
+        print(f'The House: {render_hand(house_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n YOU Win!')
+        return True
+    if __name__ == "__main__":
+        main()
 
-# get_hos is "Hit or Stay" t = total, ht = house total, h = hand, th = the_house
+
+def house_hit(house_total, house_hand, deck):
+    while house_total < 17:
+        x = deal(deck)
+        house_hand.append(x)
+        house_total += hand_total(house_hand)
 
 
-def get_hit_or_stay(t, ht, d, h, th):
-    get_hos = input(f'Your Total is {t} and The House has {ht}, would you like to Hit? ("y" or "n"): ')
-    if get_hos == 'y':
-        x = deal(d)
-        hd = deal(d)
-        h.append(x)
-        th.append(hd)
-        t += card_point(x)
-        ht += card_point(hd)
-    if get_hos == 'n':
-        pass
+def hit_player(total, hand, deck):
+    x = deal(deck)
+    hand.append(x)
+    total += hand_total(hand)
+
+
+def hit(hit_response, total, hand, deck, house_total, house_hand):
+    h = hit_response
+    if h == 'y':
+        hit_player(total, hand, deck)
+    elif h == 'n':
+        house_hit(house_total, house_hand, deck)
     else:
-        pass
+        print("Please choose 'y' or 'n'")
+        h = get_hit_or_stay(total)
+
+
+
+def get_hit_or_stay(total):
+    get_hos = input(f'Your Total is {total}, would you like to Hit? ("y" or "n"): ')
+    print("")
+    return get_hos
 
 
 def play_again():
@@ -234,7 +258,7 @@ def play_again():
             leaving = False
             if __name__ == "__main__":
                 main()
-        if a == 'n':
+        elif a == 'n':
             print('Goodbye!')
             exit()
         else:
@@ -242,11 +266,26 @@ def play_again():
             continue
 
 
-def retotal(h):
-    new_total = 0
-    for card in h:
-        new_total += card_point(card)
-    return new_total
+
+def hand_total(hand):
+    total = 0
+    ace_count = 0
+
+    # Evaluate card points and add them to total.
+    for card in hand:
+        r = card.rank
+        total += card_point(card)
+
+        if r == Rank.Ace:
+            ace_count += 1
+
+        while ace_count > 0 and total > 21:
+            ace_count -= 1
+            total -= 10
+
+
+
+    return total
 
 
 def show_cards(p, h):
@@ -263,6 +302,14 @@ def initial_deal(d, h, th):
         th.append(deal(d))
 
 
+def check_blackjack(total):
+    if total != 21:
+        return True
+    if total == 21:
+        print(f'{total} BLACKJACK!')
+        return False
+
+
 def main():
     deck = make_deck()
     random.shuffle(deck)
@@ -270,19 +317,43 @@ def main():
     the_house = []
 
     initial_deal(deck, hand, the_house)
-    total = retotal(hand)
-    house_total = retotal(the_house)
-
+    total = hand_total(hand)
+    house_total = hand_total(the_house)
     # "Play Loop"
     play = True
     while play:
+        # Displays cards to player.
         show_cards(hand, the_house)
+
+        # If blackjack is dealt on the first hand the player is declared winner and the play cycle is broken.
+        # this stops the game from asking if you want to hit or not after a blackjack has already been dealt.
+        if check_blackjack(total) == False:
+            break
+
+        # Gets user input to hit or not on line 292. Total is used as an arg to display the total in the message.
+        hit_or_not = get_hit_or_stay(total)
+
+        # Line 274 The users input from hit_or_not is passed as the first arg.
+        #       if the input == y, a new card is added tp
+        #       hand and the points are totaled at card_point(x) on line 184.
+        #       if the input == n, we use the 5th arg house_hit(house_total) line 269 to see
+        #       if the house is below 16 points and should take cards.
+        #       if it is neither, hit() asks for the proper input.
+        #       other args are used for dealing new cards and adding them to the players hands.
+        hit(hit_or_not, total, hand, deck, house_total, the_house)
+
+        # Gets the players totals with retotal() on line 315
+        total = hand_total(hand)
+        house_total = hand_total(the_house)
+
+        # If the player is asking for more cards, continue loop, don't check for winner
+        if hit_or_not == 'y' and total < 21:
+            continue
+
+        # Compares players totals to determine a winner. hand args are passed for the winner display message.
         winner = get_winner(total, hand, house_total, the_house)
         if winner:
             break
-        get_hit_or_stay(total, house_total, deck, hand, the_house)
-        total = retotal(hand)
-        house_total = retotal(the_house)
 
     play_again()
 
