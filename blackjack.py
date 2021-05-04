@@ -279,10 +279,10 @@ def hand_total(hand):
         if r == Rank.Ace:
             ace_count += 1
 
-        if ace_count > 0 and total > 21:
+        while ace_count > 0 and total > 21:
+            ace_count -= 1
             total -= 10
-            if ace_count > 1 and total >21:
-                total -= 10
+
 
 
     return total
