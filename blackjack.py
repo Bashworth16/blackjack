@@ -2,6 +2,7 @@
 
 import enum
 import random
+from typing import List
 
 
 class Suit(enum.Enum):
@@ -33,9 +34,18 @@ class Card:
         self.suit = suit
 
     def __repr__(self):
-        # return "<Card(" + self.rank.name + ", " + self.suit.name + ")>"
-        # return "<Card({0}, {1})>".format(self.rank.name, self.suit.name)
         return f"<Card({self.rank.name}, {self.suit.name})>"
+
+
+class GameState:
+    def __init__(self, deck: List[Card], player_hand: List[Card], dealer_hand: List[Card]):
+        self.deck = deck
+        self.player_hand = player_hand
+        self.dealer_hand = dealer_hand
+
+    def deal(self):
+        """Removes and returns first card of the deck."""
+        return self.deck.pop(0)
 
 
 def make_deck():
@@ -47,9 +57,53 @@ def make_deck():
     return deck
 
 
-def deal(d):
-    """Removes and returns first card of the deck."""
-    return d.pop(0)
+def house_hit(state: GameState):
+    while hand_total(state.dealer_hand) < 17:
+        state.dealer_hand.append(state.deal())
+
+
+def hit_player(state: GameState):
+    state.player_hand.append(state.deal())
+
+
+# TODO This function does too much!
+def hit(hit_response, state: GameState):
+    if hit_response == 'y':
+        hit_player(state)
+    elif hit_response == 'n':
+        house_hit(state)
+    else:
+        print("Please choose 'y' or 'n'")
+        get_hit_or_stay(state)
+
+
+def hand_total(hand):
+    total = 0
+    ace_count = 0
+
+    # Evaluate card points and add them to total.
+    for card in hand:
+        r = card.rank
+        total += card_point(card)
+        if r == Rank.Ace:
+            ace_count += 1
+        while ace_count > 0 and total > 21:
+            ace_count -= 1
+            total -= 10
+    return total
+
+
+def initial_deal(state):
+    state.player_hand.append(state.deal())
+    state.player_hand.append(state.deal())
+    state.dealer_hand.append(state.deal())
+    state.dealer_hand.append(state.deal())
+
+
+# Output
+def show_cards(state: GameState):
+    print(f'Player 1: {render_hand(state.player_hand)}')
+    print(f'The House: {render_dealer(state.dealer_hand)}\n')
 
 
 def render_hand(x):
@@ -181,74 +235,56 @@ def card_point(x):
 # not met, continue to beginning of "Play Loop".
 
 
-def get_winner(player_total, player_hand, house_total, house_hand):
+# IO TODO separate printing and winner logic.
+def get_winner(state: GameState):
+    player_total = hand_total(state.player_hand)
+    house_total = hand_total(state.dealer_hand)
     if player_total == 21 and house_total == 21:
-        print(f'The House: {render_hand(house_hand)}= {house_total}')
-        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n House Wins!')
+        print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n House Wins!')
         return True
     if player_total == 21 and house_total != 21:
-        print(f'The House: {render_hand(house_hand)}= {house_total}')
-        print(f'BLACKJACK! {render_hand(player_hand)}= {player_total} \nYOU WIN!')
+        print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
+        print(f'BLACKJACK! {render_hand(state.player_hand)}= {player_total} \nYOU WIN!')
         return True
     if house_total == 21 and player_total != 21:
-        print(f'Player 1: {render_hand(player_hand)}= {player_total}')
-        print(f'BLACKJACK! {render_hand(house_hand)}= {house_total} \nHouse wins!')
+        print(f'Player 1: {render_hand(state.player_hand)}= {player_total}')
+        print(f'BLACKJACK! {render_hand(state.dealer_hand)}= {house_total} \nHouse wins!')
         return True
     if house_total < 21 < player_total:
-        print(f'The House: {render_hand(house_hand)}= {house_total}')
-        print(f'You Bust! {render_hand(player_hand)}= {player_total} \nHouse Wins!')
+        print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
+        print(f'You Bust! {render_hand(state.player_hand)}= {player_total} \nHouse Wins!')
         return True
     if house_total > 21 > player_total:
-        print(f'Player 1: {render_hand(player_hand)}= {player_total}')
-        print(f'House Busts: {render_hand(house_hand)}= {house_total} \nYou Win!')
+        print(f'Player 1: {render_hand(state.player_hand)}= {player_total}')
+        print(f'House Busts: {render_hand(state.dealer_hand)}= {house_total} \nYou Win!')
         return True
     if player_total > 21 and house_total > 21:
         print(
-            f'Player 1: {render_hand(player_hand)}= {player_total} \nPlayers 1 Busts!')
+            f'Player 1: {render_hand(state.player_hand)}= {player_total} \nPlayers 1 Busts!')
         print("")
     if player_total < house_total < 21:
-        print(f'The House: {render_hand(house_hand)}= {house_total}')
-        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n House Wins!')
+        print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n House Wins!')
         return True
     if player_total > house_total < 21 and house_total > 17:
-        print(f'The House: {render_hand(house_hand)}= {house_total}')
-        print(f'Player 1: {render_hand(player_hand)}= {player_total} \n YOU Win!')
+        print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n YOU Win!')
         return True
     if __name__ == "__main__":
         main()
 
 
-def house_hit(house_total, house_hand, deck):
-    while house_total < 17:
-        x = deal(deck)
-        house_hand.append(x)
-        house_total += hand_total(house_hand)
-
-
-def hit_player(total, hand, deck):
-    x = deal(deck)
-    hand.append(x)
-    total += hand_total(hand)
-
-
-def hit(hit_response, total, hand, deck, house_total, house_hand):
-    h = hit_response
-    if h == 'y':
-        hit_player(total, hand, deck)
-    elif h == 'n':
-        house_hit(house_total, house_hand, deck)
-    else:
-        print("Please choose 'y' or 'n'")
-        h = get_hit_or_stay(total)
-
-
-
-def get_hit_or_stay(total):
+# TODO parse yes or no and return true or false instead of string if the user gives
+# TODO an invalid input re-ask for
+def get_hit_or_stay(state: GameState):
+    total = hand_total(state.player_hand)
     get_hos = input(f'Your Total is {total}, would you like to Hit? ("y" or "n"): ')
     print("")
     return get_hos
 
 
+# IO
 def play_again():
     leaving = True
     while leaving:
@@ -266,92 +302,36 @@ def play_again():
             continue
 
 
-
-def hand_total(hand):
-    total = 0
-    ace_count = 0
-
-    # Evaluate card points and add them to total.
-    for card in hand:
-        r = card.rank
-        total += card_point(card)
-
-        if r == Rank.Ace:
-            ace_count += 1
-
-        while ace_count > 0 and total > 21:
-            ace_count -= 1
-            total -= 10
-
-
-
-    return total
-
-
-def show_cards(p, h):
-    print(f'Player 1: {render_hand(p)}')
-    print(f'The House: {render_dealer(h)}')
-    print("")
-
-
-def initial_deal(d, h, th):
-    count = 0
-    while count < 2:
-        count += 1
-        h.append(deal(d))
-        th.append(deal(d))
-
-
-def check_blackjack(total):
+# TODO Separate IO and logic
+def has_blackjack(hand: List[Card]):
+    total = hand_total(hand)
     if total != 21:
-        return True
-    if total == 21:
-        print(f'{total} BLACKJACK!')
         return False
+    if total == 21:
+        return True
 
 
 def main():
-    deck = make_deck()
-    random.shuffle(deck)
-    hand = []
-    the_house = []
+    state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
+    random.shuffle(state.deck)
+    initial_deal(state)
 
-    initial_deal(deck, hand, the_house)
-    total = hand_total(hand)
-    house_total = hand_total(the_house)
-    # "Play Loop"
     play = True
     while play:
-        # Displays cards to player.
-        show_cards(hand, the_house)
-
-        # If blackjack is dealt on the first hand the player is declared winner and the play cycle is broken.
-        # this stops the game from asking if you want to hit or not after a blackjack has already been dealt.
-        if check_blackjack(total) == False:
+        show_cards(state)
+        if has_blackjack(state.player_hand):
+            print(f'YOU GOT A BLACKJACK!')
             break
 
-        # Gets user input to hit or not on line 292. Total is used as an arg to display the total in the message.
-        hit_or_not = get_hit_or_stay(total)
+        hit_or_not = get_hit_or_stay(state)
+        hit(hit_or_not, state)
 
-        # Line 274 The users input from hit_or_not is passed as the first arg.
-        #       if the input == y, a new card is added tp
-        #       hand and the points are totaled at card_point(x) on line 184.
-        #       if the input == n, we use the 5th arg house_hit(house_total) line 269 to see
-        #       if the house is below 16 points and should take cards.
-        #       if it is neither, hit() asks for the proper input.
-        #       other args are used for dealing new cards and adding them to the players hands.
-        hit(hit_or_not, total, hand, deck, house_total, the_house)
+        total = hand_total(state.player_hand)
 
-        # Gets the players totals with retotal() on line 315
-        total = hand_total(hand)
-        house_total = hand_total(the_house)
-
-        # If the player is asking for more cards, continue loop, don't check for winner
         if hit_or_not == 'y' and total < 21:
             continue
 
-        # Compares players totals to determine a winner. hand args are passed for the winner display message.
-        winner = get_winner(total, hand, house_total, the_house)
+        winner = get_winner(state)
         if winner:
             break
 
@@ -360,5 +340,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-#testing
