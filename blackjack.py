@@ -2,7 +2,23 @@
 
 import enum
 import random
-from typing import List
+from typing import List, Optional
+
+
+class Win(enum.Enum):
+    Push = enum.auto()
+    Player_bj = enum.auto()
+    House_bj = enum.auto()
+    Player_bust = enum.auto()
+    House_bust = enum.auto()
+    Player_win = enum.auto()
+    House_win = enum.auto()
+
+
+class Play(enum.Enum):
+    Hit = enum.auto()
+    Stay = enum.auto()
+    # TODO Add Split
 
 
 class Suit(enum.Enum):
@@ -68,20 +84,18 @@ def hit_player(state: GameState):
 
 # TODO This function does too much!
 def hit(hit_response, state: GameState):
-    if hit_response == 'y':
+    if hit_response == Play.Hit:
         hit_player(state)
-    elif hit_response == 'n':
+        return
+    if hit_response == Play.Stay:
         house_hit(state)
-    else:
-        print("Please choose 'y' or 'n'")
-        get_hit_or_stay(state)
+        return
+    raise ValueError(f"Invalid Play: {hit_response}")
 
 
 def hand_total(hand):
     total = 0
     ace_count = 0
-
-    # Evaluate card points and add them to total.
     for card in hand:
         r = card.rank
         total += card_point(card)
@@ -100,8 +114,9 @@ def initial_deal(state):
     state.dealer_hand.append(state.deal())
 
 
-# Output
+# IO
 def show_cards(state: GameState):
+    print("")
     print(f'Player 1: {render_hand(state.player_hand)}')
     print(f'The House: {render_dealer(state.dealer_hand)}\n')
 
@@ -231,57 +246,83 @@ def card_point(x):
     if n == Rank.King:
         return 10
 
-# Evaluates point for both players to determine a winner and a loop break condition. If a break condition is
-# not met, continue to beginning of "Play Loop".
 
-
-# IO TODO separate printing and winner logic.
-def get_winner(state: GameState):
+def get_winner(state: GameState) -> Win:
     player_total = hand_total(state.player_hand)
     house_total = hand_total(state.dealer_hand)
     if player_total == 21 and house_total == 21:
-        print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
-        print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n House Wins!')
-        return True
+        return Win.Push
     if player_total == 21 and house_total != 21:
+        return Win.Player_bj
+    if house_total == 21 and player_total != 21:
+        return Win.House_bj
+    if house_total < 21 < player_total:
+        return Win.Player_bust
+    if house_total > 21 > player_total:
+        return Win.House_bust
+    if player_total < house_total < 21:
+        return Win.House_win
+    if player_total > house_total < 21 and house_total > 17:
+        return Win.Player_win
+
+
+# IO
+def display_winner(winner: Win, state: GameState):
+    player_total = hand_total(state.player_hand)
+    house_total = hand_total(state.dealer_hand)
+    if winner is Win.Push:
+        print("")
+        print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
+        print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n PUSH!')
+        print("")
+    if winner is Win.Player_bj:
+        print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'BLACKJACK! {render_hand(state.player_hand)}= {player_total} \nYOU WIN!')
-        return True
-    if house_total == 21 and player_total != 21:
+        print("")
+    if winner is Win.House_bj:
+        print("")
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total}')
         print(f'BLACKJACK! {render_hand(state.dealer_hand)}= {house_total} \nHouse wins!')
-        return True
-    if house_total < 21 < player_total:
+        print("")
+    if winner is Win.Player_bust:
+        print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'You Bust! {render_hand(state.player_hand)}= {player_total} \nHouse Wins!')
-        return True
-    if house_total > 21 > player_total:
+        print("")
+    if winner is Win.House_bust:
+        print("")
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total}')
         print(f'House Busts: {render_hand(state.dealer_hand)}= {house_total} \nYou Win!')
-        return True
-    if player_total > 21 and house_total > 21:
-        print(
-            f'Player 1: {render_hand(state.player_hand)}= {player_total} \nPlayers 1 Busts!')
         print("")
-    if player_total < house_total < 21:
+    if winner is Win.House_win:
+        print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n House Wins!')
-        return True
-    if player_total > house_total < 21 and house_total > 17:
+        print("")
+    if winner is Win.Player_win:
+        print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n YOU Win!')
-        return True
-    if __name__ == "__main__":
-        main()
+        print("")
 
 
-# TODO parse yes or no and return true or false instead of string if the user gives
-# TODO an invalid input re-ask for
-def get_hit_or_stay(state: GameState):
+def get_hit_or_stay(state: GameState) -> Play:
     total = hand_total(state.player_hand)
-    get_hos = input(f'Your Total is {total}, would you like to Hit? ("y" or "n"): ')
-    print("")
-    return get_hos
+    s = input(f'Your Total is {total}, would you like to Hit? ("y" or "n"): ')
+    play = parse_play(s)
+    if play:
+        return play
+    print("Please choose 'y' or 'n'.")
+    return get_hit_or_stay(state)
+
+
+def parse_play(s: str) -> Optional[Play]:
+    if s == 'y':
+        return Play.Hit
+    if s == 'n':
+        return Play.Stay
+    return None
 
 
 # IO
@@ -292,8 +333,7 @@ def play_again():
         print("")
         if a == 'y':
             leaving = False
-            if __name__ == "__main__":
-                main()
+            main()
         elif a == 'n':
             print('Goodbye!')
             exit()
@@ -328,10 +368,12 @@ def main():
 
         total = hand_total(state.player_hand)
 
-        if hit_or_not == 'y' and total < 21:
+        if hit_or_not == Play.Hit and total < 21:
             continue
 
         winner = get_winner(state)
+        display_winner(winner, state)
+
         if winner:
             break
 
