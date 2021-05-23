@@ -74,7 +74,7 @@ def make_deck():
 
 
 def house_hit(state: GameState):
-    while hand_total(state.dealer_hand) < 17:
+    while hand_total(state.dealer_hand) <= 17:
         state.dealer_hand.append(state.deal())
 
 
@@ -82,7 +82,6 @@ def hit_player(state: GameState):
     state.player_hand.append(state.deal())
 
 
-# TODO This function does too much!
 def hit(hit_response, state: GameState):
     if hit_response == Play.Hit:
         hit_player(state)
@@ -250,6 +249,8 @@ def card_point(x):
 def get_winner(state: GameState) -> Win:
     player_total = hand_total(state.player_hand)
     house_total = hand_total(state.dealer_hand)
+    if player_total == house_total < 21:
+        return Win.Push
     if player_total == 21 and house_total == 21:
         return Win.Push
     if player_total == 21 and house_total != 21:
@@ -262,7 +263,7 @@ def get_winner(state: GameState) -> Win:
         return Win.House_bust
     if player_total < house_total < 21:
         return Win.House_win
-    if player_total > house_total < 21 and house_total > 17:
+    if player_total > house_total < 21 and house_total >= 17:
         return Win.Player_win
 
 
