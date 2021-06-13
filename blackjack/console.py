@@ -68,13 +68,11 @@ def get_hit_or_stay(state: GameState) -> Play:
 
 
 def play_again():
-    leaving = True
-    while leaving:
+    while True:
         a = input("Would you like to play again? ('y' or 'n'): ")
         print("")
         if a == 'y':
-            leaving = False
-            main()
+            return True
         elif a == 'n':
             print('Goodbye!')
             exit()
@@ -105,10 +103,13 @@ def main():
         winner = get_winner(state)
         display_winner(winner, state)
 
-        if winner:
+        if play_again() is True:
+            state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
+            random.shuffle(state.deck)
+            initial_deal(state)
+            continue
+        else:
             break
-
-    play_again()
 
 
 if __name__ == "__main__":
