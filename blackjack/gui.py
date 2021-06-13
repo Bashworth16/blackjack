@@ -1,5 +1,7 @@
 import tkinter as tk
-from core import *
+import random
+from blackjack.core import GameState, hand_total, Play, make_deck, \
+    initial_deal, has_blackjack, hit, get_winner
 
 
 def show_cards(state):
