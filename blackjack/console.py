@@ -1,4 +1,7 @@
-from core import *
+from blackjack.core import GameState, render_hand, render_dealer, Win, hand_total, parse_play, Play, make_deck, \
+    initial_deal, has_blackjack, hit, get_winner
+
+import random
 
 
 def show_cards(state: GameState):
