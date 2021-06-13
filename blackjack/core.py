@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import enum
-import random
 from typing import List, Optional
 
 
@@ -242,9 +241,7 @@ def card_point(x):
 def get_winner(state: GameState) -> Win:
     player_total = hand_total(state.player_hand)
     house_total = hand_total(state.dealer_hand)
-    if player_total == house_total < 21:
-        return Win.Push
-    if player_total == 21 and house_total == 21:
+    if player_total == 21 and house_total == 21 or player_total == house_total < 21:
         return Win.Push
     if player_total == 21 and house_total != 21:
         return Win.Player_bj
