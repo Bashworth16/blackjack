@@ -267,7 +267,7 @@ def parse_play(s: str) -> Optional[Play]:
 
 def has_blackjack(hand: List[Card]):
     total = hand_total(hand)
-    if total != 21:
-        return False
     if total == 21:
         return True
+    else:
+        return False
