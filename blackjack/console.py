@@ -1,4 +1,4 @@
-from blackjack.core import GameState, render_hand, render_dealer, Win, hand_total, parse_play, Play, make_deck, \
+from blackjack.core import GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck, \
     initial_deal, has_blackjack, hit, get_winner
 
 import random
@@ -10,46 +10,46 @@ def show_cards(state: GameState):
     print(f'The House: {render_dealer(state.dealer_hand)}\n')
 
 
-def display_winner(winner: Win, state: GameState):
+def display_winner(winner: Conclusion, state: GameState):
     player_total = hand_total(state.player_hand)
     house_total = hand_total(state.dealer_hand)
-    if winner is Win.Push:
+    if winner is Conclusion.Push:
         print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n PUSH!')
         print("")
         return
-    if winner is Win.Player_bj:
+    if winner is Conclusion.PlayerBj:
         print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'BLACKJACK! {render_hand(state.player_hand)}= {player_total} \nYOU WIN!')
         print("")
         return
-    if winner is Win.House_bj:
+    if winner is Conclusion.HouseBj:
         print("")
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total}')
         print(f'BLACKJACK! {render_hand(state.dealer_hand)}= {house_total} \nHouse wins!')
         print("")
         return
-    if winner is Win.Player_bust:
+    if winner is Conclusion.PlayerBust:
         print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'You Bust! {render_hand(state.player_hand)}= {player_total} \nHouse Wins!')
         print("")
         return
-    if winner is Win.House_bust:
+    if winner is Conclusion.HouseBust:
         print("")
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total}')
         print(f'House Busts: {render_hand(state.dealer_hand)}= {house_total} \nYou Win!')
         print("")
         return
-    if winner is Win.House_win:
+    if winner is Conclusion.HouseWin:
         print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n House Wins!')
         print("")
         return
-    if winner is Win.Player_win:
+    if winner is Conclusion.PlayerWin:
         print("")
         print(f'The House: {render_hand(state.dealer_hand)}= {house_total}')
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n YOU Win!')

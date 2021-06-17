@@ -4,14 +4,14 @@ import enum
 from typing import List, Optional
 
 
-class Win(enum.Enum):
+class Conclusion(enum.Enum):
     Push = enum.auto()
-    Player_bj = enum.auto()
-    House_bj = enum.auto()
-    Player_bust = enum.auto()
-    House_bust = enum.auto()
-    Player_win = enum.auto()
-    House_win = enum.auto()
+    PlayerBj = enum.auto()
+    HouseBj = enum.auto()
+    PlayerBust = enum.auto()
+    HouseBust = enum.auto()
+    PlayerWin = enum.auto()
+    HouseWin = enum.auto()
 
 
 class Play(enum.Enum):
@@ -107,8 +107,8 @@ def hand_total(hand):
 
 def initial_deal(state):
     state.player_hand.append(state.deal())
-    state.player_hand.append(state.deal())
     state.dealer_hand.append(state.deal())
+    state.player_hand.append(state.deal())
     state.dealer_hand.append(state.deal())
 
 
@@ -202,23 +202,23 @@ def card_point(x):
         return 10
 
 
-def get_winner(state: GameState) -> Win:
+def get_winner(state: GameState) -> Conclusion:
     player_total = hand_total(state.player_hand)
     house_total = hand_total(state.dealer_hand)
     if player_total == 21 and house_total == 21 or player_total == house_total < 21:
-        return Win.Push
+        return Conclusion.Push
     if player_total == 21 and house_total != 21:
-        return Win.Player_bj
+        return Conclusion.PlayerBj
     if house_total == 21 and player_total != 21:
-        return Win.House_bj
+        return Conclusion.HouseBj
     if house_total < 21 < player_total:
-        return Win.Player_bust
+        return Conclusion.PlayerBust
     if house_total > 21 > player_total:
-        return Win.House_bust
+        return Conclusion.HouseBust
     if player_total < house_total < 21:
-        return Win.House_win
+        return Conclusion.HouseWin
     if player_total > house_total < 21 and house_total >= 17:
-        return Win.Player_win
+        return Conclusion.PlayerWin
 
 
 def parse_play(s: str) -> Optional[Play]:
