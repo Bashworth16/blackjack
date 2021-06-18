@@ -211,7 +211,7 @@ def get_winner(state: GameState) -> Conclusion:
         return Conclusion.PlayerBj
     if house_total == 21:
         return Conclusion.HouseBj
-    if 21 < player_total:
+    if player_total > 21:
         return Conclusion.PlayerBust
     if house_total > 21:
         return Conclusion.HouseBust
