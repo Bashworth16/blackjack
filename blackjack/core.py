@@ -207,17 +207,17 @@ def get_winner(state: GameState) -> Conclusion:
     house_total = hand_total(state.dealer_hand)
     if player_total == 21 and house_total == 21 or player_total == house_total < 21:
         return Conclusion.Push
-    if player_total == 21 and house_total != 21:
+    if player_total == 21:
         return Conclusion.PlayerBj
-    if house_total == 21 and player_total != 21:
+    if house_total == 21:
         return Conclusion.HouseBj
-    if house_total < 21 < player_total:
+    if 21 < player_total:
         return Conclusion.PlayerBust
-    if house_total > 21 > player_total:
+    if house_total > 21:
         return Conclusion.HouseBust
-    if player_total < house_total < 21:
+    if player_total < house_total:
         return Conclusion.HouseWin
-    if player_total > house_total < 21 and house_total >= 17:
+    if player_total > house_total >= 17:
         return Conclusion.PlayerWin
 
 
