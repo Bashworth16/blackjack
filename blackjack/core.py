@@ -205,16 +205,16 @@ def card_point(x):
 def get_winner(state: GameState) -> Conclusion:
     player_total = hand_total(state.player_hand)
     house_total = hand_total(state.dealer_hand)
-    if player_total == house_total <= 21:
+    if player_total == house_total:
         return Conclusion.Push
-    if player_total == 21:
-        return Conclusion.PlayerBj
-    if house_total == 21:
-        return Conclusion.HouseBj
     if player_total > 21:
         return Conclusion.PlayerBust
     if house_total > 21:
         return Conclusion.HouseBust
+    if player_total == 21:
+        return Conclusion.PlayerBj
+    if house_total == 21:
+        return Conclusion.HouseBj
     if player_total < house_total:
         return Conclusion.HouseWin
     if player_total > house_total >= 17:
