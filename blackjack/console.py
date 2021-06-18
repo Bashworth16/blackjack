@@ -92,7 +92,13 @@ def main():
         show_cards(state)
         if has_blackjack(state.player_hand):
             print(f'YOU GOT A BLACKJACK!')
-            break
+            if play_again() is True:
+                state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
+                random.shuffle(state.deck)
+                initial_deal(state)
+                continue
+            else:
+                break
 
         hit_or_not = get_hit_or_stay(state)
         hit(hit_or_not, state)
