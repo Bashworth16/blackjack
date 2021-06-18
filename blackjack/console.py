@@ -55,6 +55,8 @@ def display_winner(winner: Conclusion, state: GameState):
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n YOU Win!')
         print("")
         return
+    else:
+        return 'Winner Inconclusive...'
 
 
 def get_hit_or_stay(state: GameState) -> Play:
