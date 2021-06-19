@@ -1,4 +1,4 @@
-from blackjack.core import GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck, \
+from core import GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck, \
     initial_deal, has_blackjack, hit, get_winner
 
 import random
@@ -56,7 +56,7 @@ def display_winner(winner: Conclusion, state: GameState):
         print("")
         return
     else:
-        return 'Winner Inconclusive...'
+        return
 
 
 def get_hit_or_stay(state: GameState) -> Play:
