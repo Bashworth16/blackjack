@@ -56,6 +56,7 @@ def display_winner(winner: Conclusion, state: GameState):
         print("")
         return
     else:
+        raise Exception(f'Winner Inconclusive for {winner}')
         return
 
 
