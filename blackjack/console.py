@@ -8,6 +8,7 @@ def show_cards(state: GameState):
     print("")
     print(f'Player 1: {render_hand(state.player_hand)}')
     print(f'The House: {render_dealer(state.dealer_hand)}\n')
+    return
 
 
 def display_winner(winner: Conclusion, state: GameState):
@@ -135,6 +136,7 @@ def main():
             continue
         else:
             break
+    return exit()
 
 
 if __name__ == "__main__":

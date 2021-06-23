@@ -75,10 +75,11 @@ def make_deck():
 def house_hit(state: GameState):
     while hand_total(state.dealer_hand) <= 17:
         state.dealer_hand.append(state.deal())
+    return
 
 
 def hit_player(state: GameState):
-    state.player_hand.append(state.deal())
+    return state.player_hand.append(state.deal())
 
 
 def hit(hit_response, state: GameState):
@@ -110,6 +111,7 @@ def initial_deal(state):
     state.dealer_hand.append(state.deal())
     state.player_hand.append(state.deal())
     state.dealer_hand.append(state.deal())
+    return
 
 
 def render_rank(card):
