@@ -77,7 +77,7 @@ def check_play_again():
             return True
         elif a == 'n':
             print('Goodbye!')
-            exit()
+            return False
         else:
             print('Please Choose "y" or "n"!')
             continue
