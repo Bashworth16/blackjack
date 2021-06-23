@@ -219,6 +219,7 @@ def get_winner(state: GameState) -> Conclusion:
         return Conclusion.HouseWin
     if player_total > house_total:
         return Conclusion.PlayerWin
+    raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
 def parse_play(s: str) -> Optional[Play]:
