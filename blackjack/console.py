@@ -55,8 +55,7 @@ def display_winner(winner: Conclusion, state: GameState):
         print(f'Player 1: {render_hand(state.player_hand)}= {player_total} \n YOU Win!')
         print("")
         return
-    else:
-        raise ValueError(f'Winner Inconclusive for {winner}')
+    raise ValueError(f'Winner Inconclusive for {winner}')
 
 
 def get_hit_or_stay(state: GameState) -> Play:
@@ -69,7 +68,7 @@ def get_hit_or_stay(state: GameState) -> Play:
     return get_hit_or_stay(state)
 
 
-def play_again():
+def check_play_again():
     while True:
         a = input("Would you like to play again? ('y' or 'n'): ")
         print("")
@@ -92,7 +91,9 @@ def main():
         show_cards(state)
         if has_blackjack(state.player_hand):
             print(f'YOU GOT A BLACKJACK!')
-            if play_again() is True:
+
+            # TODO Condence the follow into a function.
+            if check_play_again() is True:
                 state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
                 random.shuffle(state.deck)
                 initial_deal(state)
@@ -111,7 +112,8 @@ def main():
         winner = get_winner(state)
         display_winner(winner, state)
 
-        if play_again() is True:
+        # TODO Condence the follow into a function.
+        if check_play_again() is True:
             state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
             random.shuffle(state.deck)
             initial_deal(state)
