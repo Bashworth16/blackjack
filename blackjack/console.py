@@ -76,7 +76,7 @@ def get_hit_or_stay(state: GameState) -> Play:
                 if available_hits == 0:
                     if play:
 
-                        # TODO play always returns Play.Hit so only state.player_split takes cards.
+                        # TODO play always returns Play.Split so only state.player_split takes cards.
 
                         return play
                 else:
