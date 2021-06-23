@@ -82,6 +82,28 @@ def check_play_again():
             continue
 
 
+def set_table(state, deck_check):
+    if deck_check is True:
+        state.deck = make_deck()
+        state.player_hand = []
+        state.dealer_hand = []
+        random.shuffle(state.deck)
+        initial_deal(state)
+        return
+    else:
+        state.player_hand = []
+        state.dealer_hand = []
+        initial_deal(state)
+        return
+
+
+def check_deck(state):
+    if len(state.deck) < 25:
+        return True
+    else:
+        return False
+
+
 def main():
     state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
     random.shuffle(state.deck)
@@ -91,12 +113,8 @@ def main():
         show_cards(state)
         if has_blackjack(state.player_hand):
             print(f'YOU GOT A BLACKJACK!')
-
-            # TODO Condence the follow into a function.
             if check_play_again() is True:
-                state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
-                random.shuffle(state.deck)
-                initial_deal(state)
+                set_table(state, check_deck(state))
                 continue
             else:
                 break
@@ -112,11 +130,8 @@ def main():
         winner = get_winner(state)
         display_winner(winner, state)
 
-        # TODO Condence the follow into a function.
         if check_play_again() is True:
-            state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
-            random.shuffle(state.deck)
-            initial_deal(state)
+            set_table(state, check_deck(state))
             continue
         else:
             break
