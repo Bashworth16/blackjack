@@ -56,8 +56,7 @@ def display_winner(winner: Conclusion, state: GameState):
         print("")
         return
     else:
-        raise Exception(f'Winner Inconclusive for {winner}')
-        return
+        raise ValueError(f'Winner Inconclusive for {winner}')
 
 
 def get_hit_or_stay(state: GameState) -> Play:
