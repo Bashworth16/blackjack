@@ -1,5 +1,7 @@
 from core import GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck, \
-    initial_deal, has_blackjack, hit, get_winner
+    initial_deal, has_blackjack, hit, get_winner, check_split, check_deck, check_split_response, split_hand, set_table,\
+    \
+    check_for_bust
 
 import random
 
@@ -60,13 +62,31 @@ def display_winner(winner: Conclusion, state: GameState):
 
 
 def get_hit_or_stay(state: GameState) -> Play:
-    total = hand_total(state.player_hand)
-    s = input(f'Your Total is {total}, would you like to Hit? ("y" or "n"): ')
-    play = parse_play(s)
-    if play:
-        return play
-    print("Please choose 'y' or 'n'.")
-    return get_hit_or_stay(state)
+    if len(state.nested_hands) > 1:
+        available_hits = len(state.nested_hands)
+        while True:
+            for hand in state.nested_hands:
+                total = hand_total(hand)
+                response = input(f'Your Total for this hand {render_hand(hand)}= {total}.\n'
+                                 f' would you like to Hit? ("y" or "n"): ')
+                available_hits -= 1
+                play = parse_play(response)
+                if available_hits == 1:
+                    continue
+                if available_hits == 0:
+                    if play:
+                        return play
+                else:
+                    print("Please choose 'y' or 'n'.")
+    if len(state.nested_hands) == 1:
+        total = hand_total(state.player_hand)
+        response = input(f'Your Total for this hand {render_hand(state.player_hand)}= {total}.\n'
+                         f' would you like to Hit? ("y" or "n"): ')
+        play = parse_play(response)
+        if play:
+            return play
+        else:
+            print("Please choose 'y' or 'n'.")
 
 
 def check_play_again():
@@ -83,32 +103,21 @@ def check_play_again():
             continue
 
 
-def set_table(state, deck_check):
-    if deck_check is True:
-        state.deck = make_deck()
-        state.player_hand = []
-        state.dealer_hand = []
-        random.shuffle(state.deck)
-        initial_deal(state)
-        return
-    else:
-        state.player_hand = []
-        state.dealer_hand = []
-        initial_deal(state)
-        return
-
-
-def check_deck(state):
-    if len(state.deck) < 25:
-        return True
+def get_split_response(state, split_check):
+    if split_check is True:
+        split = input(f'You have a split opportunity:'
+                      f' {render_hand(state.player_hand)} ({hand_total(state.player_hand)}Points).\n '
+                      f'Would you like to split your hand?: ')
+        return check_split_response(split)
     else:
         return False
 
 
 def main():
-    state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
+    state = GameState(deck=make_deck(), player_split=[], player_hand=[], nested_hands=[], dealer_hand=[])
     random.shuffle(state.deck)
     initial_deal(state)
+    state.nested_hands = [state.player_hand]
 
     while True:
         show_cards(state)
@@ -120,12 +129,12 @@ def main():
             else:
                 break
 
+        split_hand(get_split_response(state, check_split(state)), state)
         hit_or_not = get_hit_or_stay(state)
         hit(hit_or_not, state)
+        check_for_bust(state.player_hand)
 
-        total = hand_total(state.player_hand)
-
-        if hit_or_not == Play.Hit and total < 21:
+        if hit_or_not == Play.Hit:
             continue
 
         winner = get_winner(state)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import random
 import enum
 from typing import List, Optional
 
@@ -17,7 +17,7 @@ class Conclusion(enum.Enum):
 class Play(enum.Enum):
     Hit = enum.auto()
     Stay = enum.auto()
-    # TODO Add Split
+    Split = enum.auto()
 
 
 class Suit(enum.Enum):
@@ -53,9 +53,12 @@ class Card:
 
 
 class GameState:
-    def __init__(self, deck: List[Card], player_hand: List[Card], dealer_hand: List[Card]):
+    def __init__(self, deck: List[Card], player_hand: List[Card], player_split: List[Card],
+                 nested_hands: List[List], dealer_hand: List[Card]):
         self.deck = deck
         self.player_hand = player_hand
+        self.player_split = player_split
+        self.nested_hands = nested_hands
         self.dealer_hand = dealer_hand
 
     def deal(self):
@@ -80,6 +83,10 @@ def house_hit(state: GameState):
 
 def hit_player(state: GameState):
     return state.player_hand.append(state.deal())
+
+
+def hit_split(state: GameState):
+    return state.player_split.append(state.deal())
 
 
 def hit(hit_response, state: GameState):
@@ -205,23 +212,24 @@ def card_point(x):
 
 
 def get_winner(state: GameState) -> Conclusion:
-    player_total = hand_total(state.player_hand)
     house_total = hand_total(state.dealer_hand)
-    if player_total == house_total:
-        return Conclusion.Push
-    if player_total > 21:
-        return Conclusion.PlayerBust
-    if house_total > 21:
-        return Conclusion.HouseBust
-    if player_total == 21:
-        return Conclusion.PlayerBj
-    if house_total == 21:
-        return Conclusion.HouseBj
-    if player_total < house_total:
-        return Conclusion.HouseWin
-    if player_total > house_total:
-        return Conclusion.PlayerWin
-    raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
+    for hand in state.nested_hands:
+        player_total = hand_total(hand)
+        if player_total == house_total:
+            return Conclusion.Push
+        if player_total > 21:
+            return Conclusion.PlayerBust
+        if house_total > 21:
+            return Conclusion.HouseBust
+        if player_total == 21:
+            return Conclusion.PlayerBj
+        if house_total == 21:
+            return Conclusion.HouseBj
+        if player_total < house_total:
+            return Conclusion.HouseWin
+        if player_total > house_total:
+            return Conclusion.PlayerWin
+        raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
 def parse_play(s: str) -> Optional[Play]:
@@ -235,6 +243,67 @@ def parse_play(s: str) -> Optional[Play]:
 def has_blackjack(hand: List[Card]):
     total = hand_total(hand)
     if total == 21:
+        return True
+    else:
+        return False
+
+
+def check_deck(state):
+    if len(state.deck) < 25:
+        return True
+    else:
+        return False
+
+
+def set_table(state, deck_check):
+    if deck_check is True:
+        state.deck = make_deck()
+        state.player_hand = []
+        state.dealer_hand = []
+        random.shuffle(state.deck)
+        initial_deal(state)
+        return
+    else:
+        state.player_hand = []
+        state.dealer_hand = []
+        initial_deal(state)
+        return
+
+
+def split_hand(x, state):
+    if len(state.nested_hands) > 1:
+        return
+    elif x is True:
+        split_card = state.player_hand.pop(1)
+        state.player_split.append(split_card)
+        state.nested_hands = [state.player_hand, state.player_split]
+        return Play.Split
+    else:
+        return
+
+
+def check_split_response(split):
+    while True:
+        if split == 'y':
+            return True
+        elif split == 'n':
+            return False
+        else:
+            print('Please Choose "y" or "n"!')
+            continue
+
+
+def check_split(state):
+    if len(state.nested_hands) > 1:
+        return False
+    if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
+        return True
+    else:
+        return False
+
+
+def check_for_bust(hand):
+    if hand_total(hand) > 21:
         return True
     else:
         return False
