@@ -93,6 +93,9 @@ def hit(hit_response, state: GameState):
     if hit_response == Play.Hit:
         hit_player(state)
         return
+    if hit_response == Play.Split:
+        hit_split(state)
+        return
     if hit_response == Play.Stay:
         house_hit(state)
         return
@@ -232,9 +235,11 @@ def get_winner(state: GameState) -> Conclusion:
         raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
-def parse_play(s: str) -> Optional[Play]:
-    if s == 'y':
+def parse_play(s: str, hand: list, state: GameState) -> Optional[Play]:
+    if s == 'y' and hand == state.player_hand:
         return Play.Hit
+    if s == 'y' and hand == state.player_split:
+        return Play.Split
     if s == 'n':
         return Play.Stay
     return None

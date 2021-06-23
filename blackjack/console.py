@@ -70,11 +70,14 @@ def get_hit_or_stay(state: GameState) -> Play:
                 response = input(f'Your Total for this hand {render_hand(hand)}= {total}.\n'
                                  f' would you like to Hit? ("y" or "n"): ')
                 available_hits -= 1
-                play = parse_play(response)
+                play = parse_play(response, hand, state)
                 if available_hits == 1:
                     continue
                 if available_hits == 0:
                     if play:
+
+                        # TODO play always returns Play.Hit so only state.player_split takes cards.
+
                         return play
                 else:
                     print("Please choose 'y' or 'n'.")
@@ -82,7 +85,7 @@ def get_hit_or_stay(state: GameState) -> Play:
         total = hand_total(state.player_hand)
         response = input(f'Your Total for this hand {render_hand(state.player_hand)}= {total}.\n'
                          f' would you like to Hit? ("y" or "n"): ')
-        play = parse_play(response)
+        play = parse_play(response, state.player_hand, state)
         if play:
             return play
         else:
