@@ -1,7 +1,8 @@
-from core import GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck, \
-    initial_deal, has_blackjack, hit, get_winner, check_split, check_deck, check_split_response, split_hand, set_table,\
-    \
-    check_for_bust
+from core import (
+    GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
+    initial_deal, has_blackjack, hit, get_winner, check_split, check_deck, check_split_response,
+    split_hand, set_table, check_for_bust
+    )
 
 import random
 
