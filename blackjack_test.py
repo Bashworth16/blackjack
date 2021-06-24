@@ -1,4 +1,5 @@
-from blackjack import Card, Suit, Rank, card_point, hand_total
+from blackjack import Card, Suit, Rank, card_point, hand_total, get_winner, GameState, Win
+
 
 A = Card(Rank.Ace, Suit.Spades)
 r2 = Card(Rank.Two, Suit.Spades)
@@ -32,3 +33,11 @@ def test_hand_total():
     assert hand_total([A, A, r3]) == 15
     assert hand_total([A, A, A, A, A, A, A, A, A, A, A, A]) == 12
     assert hand_total([A, A, A, A, A, A, A, A, A, A, A]) == 21
+
+
+def test_get_winner():
+    def get(player_hand, dealer_hand):
+        return get_winner(GameState([], player_hand, dealer_hand))
+    assert get([A, r9], [K, Q]) == Win.Push
+    assert get([A, K], [r10, A]) == Win.Push
+    assert get([A, K], [A, A]) == Win.Player_bj
