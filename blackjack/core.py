@@ -53,12 +53,9 @@ class Card:
 
 
 class GameState:
-    def __init__(self, deck: List[Card], player_hand: List[Card], player_split: List[Card],
-                 nested_hands: List[List], dealer_hand: List[Card]):
+    def __init__(self, deck: List[Card], player_hand: List[Card], dealer_hand: List[Card]):
         self.deck = deck
         self.player_hand = player_hand
-        self.player_split = player_split
-        self.nested_hands = nested_hands
         self.dealer_hand = dealer_hand
 
     def deal(self):

@@ -98,7 +98,7 @@ def get_split_response(state, split_check):
 
 
 def main():
-    state = GameState(deck=make_deck(), player_split=[], player_hand=[], nested_hands=[], dealer_hand=[])
+    state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
     random.shuffle(state.deck)
     initial_deal(state)
 
