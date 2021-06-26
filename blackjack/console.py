@@ -72,27 +72,6 @@ def get_hit_or_stay(state: GameState) -> Play:
     else:
         print("Please choose 'y' or 'n'.")
 
-    # Add later for Split_hand feature
-    # if len(state.nested_hands) > 1:
-    #     available_hits = len(state.nested_hands)
-    #     while True:
-    #         for hand in state.nested_hands:
-    #             total = hand_total(hand)
-    #             response = input(f'Your Total for this hand {render_hand(hand)}= {total}.\n'
-    #                              f' would you like to Hit? ("y" or "n"): ')
-    #             if response is 'y' or 'n':
-    #                 available_hits -= 1
-    #                 play = parse_play(response, hand, state)
-    #                 if available_hits == 1:
-    #                     continue
-    #                 if available_hits == 0:
-    #                     if play:
-    #                         return play
-    #             else:
-    #                 print("Please choose 'y' or 'n'...")
-    #                 continue
-    # if len(state.nested_hands) == 1:
-
 
 def check_play_again():
     while True:
@@ -123,9 +102,6 @@ def main():
     random.shuffle(state.deck)
     initial_deal(state)
 
-    # Add later for Split_hand feature
-    # state.nested_hands = [state.player_hand]
-
     while True:
         show_cards(state)
         if has_blackjack(state.player_hand):
@@ -135,9 +111,6 @@ def main():
                 continue
             else:
                 break
-
-        # Add later for Split_hand feature
-        # split_hand(get_split_response(state, check_split(state)), state)
 
         hit_or_not = get_hit_or_stay(state)
         hit(hit_or_not, state)

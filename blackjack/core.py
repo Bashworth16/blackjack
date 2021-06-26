@@ -287,7 +287,6 @@ def split_hand(x, state):
     else:
         return
 
-
 # For split_hand feature...
 def check_split_response(split):
     while True:
