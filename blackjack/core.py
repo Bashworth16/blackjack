@@ -216,23 +216,23 @@ def card_point(x):
 
 def get_winner(state: GameState) -> Conclusion:
     house_total = hand_total(state.dealer_hand)
-    for hand in state.nested_hands:
-        player_total = hand_total(hand)
-        if player_total == house_total:
-            return Conclusion.Push
-        if player_total > 21:
-            return Conclusion.PlayerBust
-        if house_total > 21:
-            return Conclusion.HouseBust
-        if player_total == 21:
-            return Conclusion.PlayerBj
-        if house_total == 21:
-            return Conclusion.HouseBj
-        if player_total < house_total:
-            return Conclusion.HouseWin
-        if player_total > house_total:
-            return Conclusion.PlayerWin
-        raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
+    # for hand in state.nested_hands:
+    player_total = hand_total(state.player_hand)
+    if player_total == house_total:
+        return Conclusion.Push
+    if player_total > 21:
+        return Conclusion.PlayerBust
+    if house_total > 21:
+        return Conclusion.HouseBust
+    if player_total == 21:
+        return Conclusion.PlayerBj
+    if house_total == 21:
+        return Conclusion.HouseBj
+    if player_total < house_total:
+        return Conclusion.HouseWin
+    if player_total > house_total:
+        return Conclusion.PlayerWin
+    raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
 def parse_play(s: str, hand: list, state: GameState) -> Optional[Play]:
@@ -275,6 +275,7 @@ def set_table(state, deck_check):
         return
 
 
+# For split_hand feature...
 def split_hand(x, state):
     if len(state.nested_hands) > 1:
         return
@@ -287,6 +288,7 @@ def split_hand(x, state):
         return
 
 
+# For split_hand feature...
 def check_split_response(split):
     while True:
         if split == 'y':
@@ -298,6 +300,7 @@ def check_split_response(split):
             continue
 
 
+# For split_hand feature...
 def check_split(state):
     if len(state.nested_hands) > 1:
         return False
@@ -307,6 +310,7 @@ def check_split(state):
         return False
 
 
+# For split_hand feature...
 def check_for_bust(hand):
     if hand_total(hand) > 21:
         return True
