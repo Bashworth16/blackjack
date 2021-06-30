@@ -296,7 +296,7 @@ def check_split_response(split):
             continue
 
 
-# For split_hand feature...
+# For split_hand feature..
 def check_split(state):
     if len(state.nested_hands) > 1:
         return False
