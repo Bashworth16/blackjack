@@ -306,7 +306,7 @@ def check_split(state):
         return False
 
 
-# For split_hand feature...
+# For split_hand feature..
 def check_for_bust(hand):
     if hand_total(hand) > 21:
         return True
