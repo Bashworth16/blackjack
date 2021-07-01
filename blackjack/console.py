@@ -1,9 +1,8 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, check_deck, check_split_response,
-    set_table
-    )
-
+    set_table, check_split, split_hand
+)
 import random
 
 
@@ -87,23 +86,28 @@ def check_play_again():
             continue
 
 
-def get_split_response(state, split_check):
-    if split_check is True:
-        split = input(f'You have a split opportunity:'
-                      f' {render_hand(state.player_hand)} ({hand_total(state.player_hand)}Points).\n '
-                      f'Would you like to split your hand?: ')
-        return check_split_response(split)
-    else:
-        return False
+def get_split_response(state):
+    split_response = input(f'You have a split opportunity:'
+                           f' {render_hand(state.player_hand)} ({hand_total(state.player_hand)}Points).\n '
+                           f'Would you like to split your hand? ("y" or "n"): ')
+    return split_response
 
 
 def main():
-    state = GameState(deck=make_deck(), player_hand=[], dealer_hand=[])
+    state = GameState(deck=make_deck(), player_hand=[], player_split=[], dealer_hand=[])
     random.shuffle(state.deck)
     initial_deal(state)
 
     while True:
         show_cards(state)
+        if check_split(state) is True:
+            split_response = get_split_response(state)
+            if check_split_response(split_response) is True:
+                split_hand(state)
+            else:
+                pass
+        else:
+            pass
         if has_blackjack(state.player_hand):
             print(f'YOU GOT A BLACKJACK!')
             if check_play_again() is True:

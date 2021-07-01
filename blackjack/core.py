@@ -53,9 +53,10 @@ class Card:
 
 
 class GameState:
-    def __init__(self, deck: List[Card], player_hand: List[Card], dealer_hand: List[Card]):
+    def __init__(self, deck: List[Card], player_hand: List[Card], player_split: List[Card], dealer_hand: List[Card]):
         self.deck = deck
         self.player_hand = player_hand
+        self.player_split = player_split
         self.dealer_hand = dealer_hand
 
     def deal(self):
@@ -82,6 +83,7 @@ def hit_player(state: GameState):
     return state.player_hand.append(state.deal())
 
 
+# Split hand feature
 def hit_split(state: GameState):
     return state.player_split.append(state.deal())
 
@@ -273,16 +275,11 @@ def set_table(state, deck_check):
 
 
 # For split_hand feature...
-def split_hand(x, state):
-    if len(state.nested_hands) > 1:
-        return
-    elif x is True:
-        split_card = state.player_hand.pop(1)
-        state.player_split.append(split_card)
-        state.nested_hands = [state.player_hand, state.player_split]
-        return Play.Split
-    else:
-        return
+def split_hand(state):
+    split_card = state.player_hand.pop(1)
+    state.player_split.append(split_card)
+    return Play.Split
+
 
 # For split_hand feature...
 def check_split_response(split):
@@ -298,8 +295,6 @@ def check_split_response(split):
 
 # For split_hand feature...
 def check_split(state):
-    if len(state.nested_hands) > 1:
-        return False
     if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
         return True
     else:
