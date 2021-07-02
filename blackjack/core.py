@@ -52,11 +52,6 @@ class Card:
         return f"<Card({self.rank.name}, {self.suit.name})>"
 
 
-class Hand:
-    def __init__(self, hands: List[List]):
-        self.hands = hands
-
-
 class GameState:
     def __init__(self, deck: List[Card], player: List[Card], hands: List[List], dealer_hand: List[Card]):
         self.deck = deck
@@ -67,9 +62,6 @@ class GameState:
     def deal(self):
         """Removes and returns first card of the deck."""
         return self.deck.pop(0)
-
-    def player_points(self):
-        return hand_total(self.player)
 
 
 def make_deck():
@@ -88,8 +80,7 @@ def house_hit(state: GameState):
 
 
 def hit_player(state: GameState):
-    state.hands.append(state.player)
-    return state.hands
+    return state.player.append(state.deal())
 
 
 def hit(hit_response, state: GameState):
@@ -216,29 +207,29 @@ def card_point(x):
 
 def get_winner(state: GameState) -> Conclusion:
     house_total = hand_total(state.dealer_hand)
-    for hand in state.hands:
-        player_total = hand_total(hand)
-        if player_total == house_total:
-            return Conclusion.Push
-        if player_total > 21:
-            return Conclusion.PlayerBust
-        if house_total > 21:
-            return Conclusion.HouseBust
-        if player_total == 21:
-            return Conclusion.PlayerBj
-        if house_total == 21:
-            return Conclusion.HouseBj
-        if player_total < house_total:
-            return Conclusion.HouseWin
-        if player_total > house_total:
-            return Conclusion.PlayerWin
-        raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
+    # for hand in state.nested_hands:
+    player_total = hand_total(state.player)
+    if player_total == house_total:
+        return Conclusion.Push
+    if player_total > 21:
+        return Conclusion.PlayerBust
+    if house_total > 21:
+        return Conclusion.HouseBust
+    if player_total == 21:
+        return Conclusion.PlayerBj
+    if house_total == 21:
+        return Conclusion.HouseBj
+    if player_total < house_total:
+        return Conclusion.HouseWin
+    if player_total > house_total:
+        return Conclusion.PlayerWin
+    raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
-def parse_play(response: str, hand: list, state: GameState) -> Optional[Play]:
-    if response == 'y' and hand == state.player:
+def parse_play(s: str, hand: list, state: GameState) -> Optional[Play]:
+    if s == 'y' and hand == state.player:
         return Play.Hit
-    if response == 'n':
+    if s == 'n':
         return Play.Stay
     return None
 
@@ -274,13 +265,16 @@ def set_table(state, deck_check):
 
 
 # For split_hand feature...
-def split_hand(state):
-    state.hands.append([state.player.pop(0)])
-    state.hands.append([state.player.pop(0)])
-    for hand in state.hands:
-        card = state.deal()
-        hand.append(card)
-    return state.hands
+def split_hand(x, state):
+    if len(state.nested_hands) > 1:
+        return
+    elif x is True:
+        split_card = state.player_hand.pop(1)
+        state.player_split.append(split_card)
+        state.nested_hands = [state.player_hand, state.player_split]
+        return Play.Split
+    else:
+        return
 
 
 # For split_hand feature...
@@ -297,7 +291,9 @@ def check_split_response(split):
 
 # For split_hand feature...
 def check_split(state):
-    if card_point(state.player[0]) == card_point(state.player[1]):
+    if len(state.nested_hands) > 1:
+        return False
+    if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
         return True
     else:
         return False
