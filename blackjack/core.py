@@ -79,13 +79,13 @@ def house_hit(state: GameState):
     return
 
 
-def hit_player(state: GameState):
-    return state.player.append(state.deal())
+def hit_player(hand, state):
+    return hand.append(state.deal())
 
 
-def hit(hit_response, state: GameState):
+def hit(hit_response, hand, state):
     if hit_response == Play.Hit:
-        hit_player(state)
+        hit_player(hand, state)
         return
     if hit_response == Play.Stay:
         house_hit(state)
@@ -225,15 +225,15 @@ def get_winner(state: GameState) -> Conclusion:
     raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
-def parse_play(s: str, hand: list, state: GameState) -> Optional[Play]:
-    if s == 'y' and hand == state.player:
+def parse_play(s: str) -> Optional[Play]:
+    if s == 'y':
         return Play.Hit
     if s == 'n':
         return Play.Stay
     return None
 
 
-def has_blackjack(hand: List[Card]):
+def has_blackjack(hand: List):
     total = hand_total(hand)
     if total == 21:
         return True
@@ -266,15 +266,19 @@ def set_table(state, deck_check):
 # For split_hand feature...
 def split_hand(response, state):
     if len(state.hands) > 1:
-        return False
+        state.hands = state.player
+        return state.hands
+
     elif response is True:
         for card in state.player:
             dealt_card = state.deal()
             new_hand = [card, dealt_card]
-            state.hands.append([new_hand])
-        return True
+            state.hands.append(new_hand)
+        return state.hands
+
     else:
-        return False
+        state.hands = state.player
+        return state.hands
 
 
 # For split_hand feature...
@@ -305,3 +309,14 @@ def check_for_bust(hand):
         return True
     else:
         return False
+
+
+def best_hand(state: GameState):
+    if check_for_bust(state.hands[0]) is True:
+        return state.hands[1]
+    if check_for_bust(state.hands[1]) is True:
+        return state.hands[0]
+    if hand_total(state.hands[0]) > hand_total(state.hands[1]):
+        return state.hands[0]
+    else:
+        return state.hands[1]

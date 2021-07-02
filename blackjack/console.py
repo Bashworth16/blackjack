@@ -1,10 +1,10 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, check_deck, check_split_response,
-    set_table, split_hand, check_split
+    set_table, split_hand, check_split, best_hand, check_for_bust
     )
 
-#TODO DELETE LATER
+# TODO DELETE LATER
 from core import Card, Rank, Suit
 
 import random
@@ -65,11 +65,11 @@ def display_winner(conclusion: Conclusion, state: GameState):
     raise ValueError(f'Winner Inconclusive for {conclusion}')
 
 
-def get_hit_or_stay(state: GameState) -> Play:
-    total = hand_total(state.player)
-    response = input(f'Your Total is {total}.\n'
+def get_hit_or_stay(hand) -> Play:
+    total = hand_total(hand)
+    response = input(f'{render_hand(hand)}Your Total is {total}.\n'
                      f' would you like to Hit? ("y" or "n"): ')
-    play = parse_play(response, state.player, state)
+    play = parse_play(response)
     if play:
         return play
     else:
@@ -95,9 +95,8 @@ def get_split_response(state, split_check):
         split = input(f'You have a split opportunity:'
                       f' {render_hand(state.player)} ({hand_total(state.player)}Points).\n '
                       f'Would you like to split your hand?: ')
+        print(f"\n")
         return check_split_response(split)
-    else:
-        return False
 
 
 def main():
@@ -105,30 +104,39 @@ def main():
     random.shuffle(state.deck)
     initial_deal(state)
 
-    #TODO DELETE LATER
+    # TODO DELETE LATER
     state.player = [Card(Rank.King, Suit.Clubs), Card(Rank.King, Suit.Spades)]
 
     while True:
         show_cards(state)
+        state.hands = split_hand(get_split_response(state, check_split(state)), state)
+        state.player = state.hands
 
-        if split_hand(get_split_response(state, check_split(state)), state) is True:
-            print(state.hands)
-            pass
+        if len([state.hands]) > 1:
+            for each in state.hands:
+                if has_blackjack(each):
+                    print(f'YOU GOT A BLACKJACK!')
+                    if check_play_again() is True:
+                        set_table(state, check_deck(state))
+                        continue
+                    else:
+                        break
 
-        if has_blackjack(state.player):
-            print(f'YOU GOT A BLACKJACK!')
-            if check_play_again() is True:
-                set_table(state, check_deck(state))
-                continue
-            else:
-                break
+        for hand in state.hands:
+            print(f'{render_hand(hand)}')
 
-        hit_or_not = get_hit_or_stay(state)
-        hit(hit_or_not, state)
+        loop = True
+        while loop:
+            for hand in state.hands:
+                hit_or_not = get_hit_or_stay(hand)
+                hit(hit_or_not, hand, state)
+                if hit_or_not == Play.Hit:
+                    loop = True
+                    continue
+                else:
+                    loop = False
 
-        if hit_or_not == Play.Hit and hand_total(state.player) < 21:
-            continue
-
+        state.player = best_hand(state)
         winner = get_winner(state)
         display_winner(winner, state)
 
