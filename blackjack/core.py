@@ -52,16 +52,24 @@ class Card:
         return f"<Card({self.rank.name}, {self.suit.name})>"
 
 
+class Hand:
+    def __init__(self, hands: List[List]):
+        self.hands = hands
+
+
 class GameState:
-    def __init__(self, deck: List[Card], player_hand: List[Card], player_split: List[Card], dealer_hand: List[Card]):
+    def __init__(self, deck: List[Card], player: List[Card], hands: List[List], dealer_hand: List[Card]):
         self.deck = deck
-        self.player_hand = player_hand
-        self.player_split = player_split
+        self.player = player
+        self.hands = hands
         self.dealer_hand = dealer_hand
 
     def deal(self):
         """Removes and returns first card of the deck."""
         return self.deck.pop(0)
+
+    def player_points(self):
+        return hand_total(self.player)
 
 
 def make_deck():
@@ -80,20 +88,13 @@ def house_hit(state: GameState):
 
 
 def hit_player(state: GameState):
-    return state.player_hand.append(state.deal())
-
-
-# Split hand feature
-def hit_split(state: GameState):
-    return state.player_split.append(state.deal())
+    state.hands.append(state.player)
+    return state.hands
 
 
 def hit(hit_response, state: GameState):
     if hit_response == Play.Hit:
         hit_player(state)
-        return
-    if hit_response == Play.Split:
-        hit_split(state)
         return
     if hit_response == Play.Stay:
         house_hit(state)
@@ -116,9 +117,9 @@ def hand_total(hand):
 
 
 def initial_deal(state):
-    state.player_hand.append(state.deal())
+    state.player.append(state.deal())
     state.dealer_hand.append(state.deal())
-    state.player_hand.append(state.deal())
+    state.player.append(state.deal())
     state.dealer_hand.append(state.deal())
     return
 
@@ -215,31 +216,29 @@ def card_point(x):
 
 def get_winner(state: GameState) -> Conclusion:
     house_total = hand_total(state.dealer_hand)
-    # for hand in state.nested_hands:
-    player_total = hand_total(state.player_hand)
-    if player_total == house_total:
-        return Conclusion.Push
-    if player_total > 21:
-        return Conclusion.PlayerBust
-    if house_total > 21:
-        return Conclusion.HouseBust
-    if player_total == 21:
-        return Conclusion.PlayerBj
-    if house_total == 21:
-        return Conclusion.HouseBj
-    if player_total < house_total:
-        return Conclusion.HouseWin
-    if player_total > house_total:
-        return Conclusion.PlayerWin
-    raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
+    for hand in state.hands:
+        player_total = hand_total(hand)
+        if player_total == house_total:
+            return Conclusion.Push
+        if player_total > 21:
+            return Conclusion.PlayerBust
+        if house_total > 21:
+            return Conclusion.HouseBust
+        if player_total == 21:
+            return Conclusion.PlayerBj
+        if house_total == 21:
+            return Conclusion.HouseBj
+        if player_total < house_total:
+            return Conclusion.HouseWin
+        if player_total > house_total:
+            return Conclusion.PlayerWin
+        raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
-def parse_play(s: str, hand: list, state: GameState) -> Optional[Play]:
-    if s == 'y' and hand == state.player_hand:
+def parse_play(response: str, hand: list, state: GameState) -> Optional[Play]:
+    if response == 'y' and hand == state.player:
         return Play.Hit
-    if s == 'y' and hand == state.player_split:
-        return Play.Split
-    if s == 'n':
+    if response == 'n':
         return Play.Stay
     return None
 
@@ -262,13 +261,13 @@ def check_deck(state):
 def set_table(state, deck_check):
     if deck_check is True:
         state.deck = make_deck()
-        state.player_hand = []
+        state.player = []
         state.dealer_hand = []
         random.shuffle(state.deck)
         initial_deal(state)
         return
     else:
-        state.player_hand = []
+        state.player = []
         state.dealer_hand = []
         initial_deal(state)
         return
@@ -276,9 +275,12 @@ def set_table(state, deck_check):
 
 # For split_hand feature...
 def split_hand(state):
-    split_card = state.player_hand.pop(1)
-    state.player_split.append(split_card)
-    return Play.Split
+    state.hands.append([state.player.pop(0)])
+    state.hands.append([state.player.pop(0)])
+    for hand in state.hands:
+        card = state.deal()
+        hand.append(card)
+    return state.hands
 
 
 # For split_hand feature...
@@ -295,7 +297,7 @@ def check_split_response(split):
 
 # For split_hand feature...
 def check_split(state):
-    if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
+    if card_point(state.player[0]) == card_point(state.player[1]):
         return True
     else:
         return False
