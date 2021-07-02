@@ -207,7 +207,6 @@ def card_point(x):
 
 def get_winner(state: GameState) -> Conclusion:
     house_total = hand_total(state.dealer_hand)
-    # for hand in state.nested_hands:
     player_total = hand_total(state.player)
     if player_total == house_total:
         return Conclusion.Push
@@ -265,16 +264,17 @@ def set_table(state, deck_check):
 
 
 # For split_hand feature...
-def split_hand(x, state):
-    if len(state.nested_hands) > 1:
-        return
-    elif x is True:
-        split_card = state.player_hand.pop(1)
-        state.player_split.append(split_card)
-        state.nested_hands = [state.player_hand, state.player_split]
-        return Play.Split
+def split_hand(response, state):
+    if len(state.hands) > 1:
+        return False
+    elif response is True:
+        for card in state.player:
+            dealt_card = state.deal()
+            new_hand = [card, dealt_card]
+            state.hands.append([new_hand])
+        return True
     else:
-        return
+        return False
 
 
 # For split_hand feature...
@@ -291,9 +291,9 @@ def check_split_response(split):
 
 # For split_hand feature...
 def check_split(state):
-    if len(state.nested_hands) > 1:
+    if len(state.hands) > 1:
         return False
-    if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
+    if card_point(state.player[0]) == card_point(state.player[1]):
         return True
     else:
         return False
