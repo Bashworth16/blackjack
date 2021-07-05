@@ -52,11 +52,15 @@ class Card:
         return f"<Card({self.rank.name}, {self.suit.name})>"
 
 
+class Hand:
+    def __init__(self, cards: List[Card]):
+        self.cards = cards
+
+
 class GameState:
-    def __init__(self, deck: List[Card], player: List[Card], hands: List[List], dealer_hand: List[Card]):
+    def __init__(self, deck: List[Card], player_hands: List[Hand], dealer_hand: List[Card]):
         self.deck = deck
-        self.player = player
-        self.hands = hands
+        self.player_hands = player_hands
         self.dealer_hand = dealer_hand
 
     def deal(self):
@@ -79,11 +83,11 @@ def house_hit(state: GameState):
     return
 
 
-def hit_player(hand, state):
-    return hand.append(state.deal())
+def hit_player(hand: Hand, state: GameState):
+    return hand.cards.append(state.deal())
 
 
-def hit(hit_response, hand, state):
+def hit(hit_response, state: GameState, hand: Hand):
     if hit_response == Play.Hit:
         hit_player(hand, state)
         return
@@ -107,11 +111,12 @@ def hand_total(hand):
     return total
 
 
-def initial_deal(state):
-    state.player.append(state.deal())
+def initial_deal(state: GameState, hand: Hand):
+    hand.cards.append(state.deal())
     state.dealer_hand.append(state.deal())
-    state.player.append(state.deal())
+    hand.cards.append(state.deal())
     state.dealer_hand.append(state.deal())
+    state.player_hands.append(hand)
     return
 
 
@@ -205,9 +210,10 @@ def card_point(x):
         return 10
 
 
-def get_winner(state: GameState) -> Conclusion:
+def get_winner(state: GameState, hand: Hand) -> Conclusion:
     house_total = hand_total(state.dealer_hand)
-    player_total = hand_total(state.player)
+    # for hand in state.nested_hands:
+    player_total = hand_total(hand.cards)
     if player_total == house_total:
         return Conclusion.Push
     if player_total > 21:
@@ -233,8 +239,8 @@ def parse_play(s: str) -> Optional[Play]:
     return None
 
 
-def has_blackjack(hand: List):
-    total = hand_total(hand)
+def has_blackjack(hand: Hand):
+    total = hand_total(hand.cards)
     if total == 21:
         return True
     else:
@@ -248,37 +254,34 @@ def check_deck(state):
         return False
 
 
-def set_table(state, deck_check):
+def set_table(state: GameState, deck_check, hand: Hand):
     if deck_check is True:
         state.deck = make_deck()
-        state.player = []
+        state.player_hand = []
         state.dealer_hand = []
+        hand.cards = []
         random.shuffle(state.deck)
-        initial_deal(state)
+        initial_deal(state, hand)
         return
     else:
-        state.player = []
+        state.player_hand = []
         state.dealer_hand = []
-        initial_deal(state)
+        hand.cards = []
+        initial_deal(state, hand)
         return
 
 
 # For split_hand feature...
-def split_hand(response, state):
-    if len(state.hands) > 1:
-        state.hands = state.player
-        return state.hands
-
-    elif response is True:
-        for card in state.player:
-            dealt_card = state.deal()
-            new_hand = [card, dealt_card]
-            state.hands.append(new_hand)
-        return state.hands
-
+def split_hand(x, state):
+    if len(state.nested_hands) > 1:
+        return
+    elif x is True:
+        split_card = state.player_hand.pop(1)
+        state.player_split.append(split_card)
+        state.nested_hands = [state.player_hand, state.player_split]
+        return Play.Split
     else:
-        state.hands = state.player
-        return state.hands
+        return
 
 
 # For split_hand feature...
@@ -295,9 +298,9 @@ def check_split_response(split):
 
 # For split_hand feature...
 def check_split(state):
-    if len(state.hands) > 1:
+    if len(state.nested_hands) > 1:
         return False
-    if card_point(state.player[0]) == card_point(state.player[1]):
+    if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
         return True
     else:
         return False
@@ -309,14 +312,3 @@ def check_for_bust(hand):
         return True
     else:
         return False
-
-
-def best_hand(state: GameState):
-    if check_for_bust(state.hands[0]) is True:
-        return state.hands[1]
-    if check_for_bust(state.hands[1]) is True:
-        return state.hands[0]
-    if hand_total(state.hands[0]) > hand_total(state.hands[1]):
-        return state.hands[0]
-    else:
-        return state.hands[1]
