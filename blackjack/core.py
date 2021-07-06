@@ -116,7 +116,6 @@ def initial_deal(state: GameState, hand: Hand):
     state.dealer_hand.append(state.deal())
     hand.cards.append(state.deal())
     state.dealer_hand.append(state.deal())
-    state.player_hands.append(hand)
     return
 
 
@@ -272,38 +271,21 @@ def set_table(state: GameState, deck_check, hand: Hand):
 
 
 # For split_hand feature...
-def split_hand(x, state):
-    if len(state.nested_hands) > 1:
-        return
-    elif x is True:
-        split_card = state.player_hand.pop(1)
-        state.player_split.append(split_card)
-        state.nested_hands = [state.player_hand, state.player_split]
-        return Play.Split
-    else:
-        return
+def split_hand(split_bool, state):
+    pass
 
 
 # For split_hand feature...
-def check_split_response(split):
-    while True:
-        if split == 'y':
+def check_split(state, hands: Hand):
+    if len(hands.cards) > 2:
+        return False
+    if len(state.player_hands) > 1:
+        return False
+    for hands in state.player_hands:
+        if card_point(hands.cards[1]) == card_point(hands.cards[0]):
             return True
-        elif split == 'n':
-            return False
         else:
-            print('Please Choose "y" or "n"!')
-            continue
-
-
-# For split_hand feature...
-def check_split(state):
-    if len(state.nested_hands) > 1:
-        return False
-    if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
-        return True
-    else:
-        return False
+            return False
 
 
 # For split_hand feature...

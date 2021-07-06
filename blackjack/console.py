@@ -1,15 +1,15 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
-    initial_deal, has_blackjack, hit, get_winner, check_deck, check_split_response,
-    set_table, Hand
+    initial_deal, has_blackjack, hit, get_winner, check_deck, set_table,
+    Hand, check_split, split_hand
     )
 
 import random
 
 
-def show_cards(state: GameState, hand: Hand):
-    print("")
-    print(f'Player 1: {render_hand(hand.cards)}')
+def show_cards(state: GameState):
+    for hands in state.player_hands:
+        print(f'\nPlayer 1: {render_hand(hands.cards)}')
     print(f'The House: {render_dealer(state.dealer_hand)}\n')
     return
 
@@ -87,14 +87,27 @@ def check_play_again():
             continue
 
 
-def get_split_response(state, split_check):
-    if split_check is True:
-        split = input(f'You have a split opportunity:'
-                      f' {render_hand(state.player_hand)} ({hand_total(state.player_hand)}Points).\n '
-                      f'Would you like to split your hand?: ')
-        return check_split_response(split)
-    else:
-        return False
+def split_response_loop(state):
+    for hands in state.player_hands:
+        return split_response(hands)
+
+
+def split_response(hands: Hand):
+    split = input(f'You have a split opportunity:'
+                  f' {render_hand(hands.cards)} ({hand_total(hands.cards)}Points).\n '
+                  f'Would you like to split your hand? ("y" or "n"): ')
+    return split
+
+
+def check_split_response(split):
+    while True:
+        if split == 'y':
+            return True
+        elif split == 'n':
+            return False
+        else:
+            print('Please Choose "y" or "n"!')
+            continue
 
 
 def main():
@@ -102,9 +115,16 @@ def main():
     hands = Hand(cards=[])
     random.shuffle(state.deck)
     initial_deal(state, hands)
+    state.player_hands.append(hands)
 
     while True:
-        show_cards(state, hands)
+        show_cards(state)
+
+        if check_split(state, hands):
+            split = split_response_loop(state)
+            split_bool = check_split_response(split)
+            split_hand(split_bool, state)
+
         if has_blackjack(hands):
             print(f'YOU GOT A BLACKJACK!')
             if check_play_again() is True:
