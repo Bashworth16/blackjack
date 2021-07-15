@@ -1,7 +1,7 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, check_deck, set_table,
-    Hand, check_split, split_hand, Player, Dealer
+    check_split, split_hand, Player, Dealer
     )
 
 import random
@@ -92,9 +92,10 @@ def split_response_loop(state):
         return split_response(hands)
 
 
-def split_response(hands: Hand):
+def split_response(state: GameState):
     split = input(f'You have a split opportunity:'
-                  f' {render_hand(hands.cards)} ({hand_total(hands.cards)}Points).\n '
+                  f' {render_hand(state.player.active_hand().cards)} '
+                  f'({hand_total(state.player.active_hand().cards)}Points).\n '
                   f'Would you like to split your hand? ("y" or "n"): ')
     return split
 
@@ -119,7 +120,7 @@ def main():
         show_cards(state)
 
         if check_split(state):
-            split = split_response_loop(state)
+            split = split_response(state)
             split_bool = check_split_response(split)
             split_hand(split_bool, state)
             show_cards(state)
