@@ -101,9 +101,9 @@ def hit_player(hand: Hand, state: GameState):
     return hand.cards.append(state.deal())
 
 
-def hit(hit_response, state: GameState):
+def hit(hit_response, state: GameState, hand):
     if hit_response == Play.Hit:
-        hit_player(state.player.active_hand(), state)
+        hit_player(hand, state)
         return
     if hit_response == Play.Stay:
         house_hit(state)
@@ -223,9 +223,9 @@ def card_point(x):
         return 10
 
 
-def get_winner(state: GameState) -> Conclusion:
+def get_winner(state: GameState, hand) -> Conclusion:
     house_total = hand_total(state.dealer.hand.cards)
-    player_total = hand_total(state.player.active_hand().cards)
+    player_total = hand_total(hand.cards)
     if player_total == house_total:
         return Conclusion.Push
     if player_total > 21:

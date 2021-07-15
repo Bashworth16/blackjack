@@ -14,49 +14,49 @@ def show_cards(state: GameState):
     return
 
 
-def display_winner(conclusion: Conclusion, state: GameState):
-    player_total = hand_total(state.player.active_hand().cards)
+def display_winner(conclusion: Conclusion, state: GameState, hand):
+    player_total = hand_total(hand.cards)
     house_total = hand_total(state.dealer.hand.cards)
     if conclusion is Conclusion.Push:
         print("")
         print(f'The House: {render_hand(state.dealer.hand.cards)}= {house_total}')
-        print(f'Player 1: {render_hand(state.player.active_hand().cards)}= {player_total} \n PUSH!')
+        print(f'Player 1: {render_hand(hand.cards)}= {player_total} \n PUSH!')
         print("")
         return
     if conclusion is Conclusion.PlayerBj:
         print("")
         print(f'The House: {render_hand(state.dealer.hand.cards)}= {house_total}')
-        print(f'BLACKJACK! {render_hand(state.player.active_hand().cards)}= {player_total} \nYOU WIN!')
+        print(f'BLACKJACK! {render_hand(hand.cards)}= {player_total} \nYOU WIN!')
         print("")
         return
     if conclusion is Conclusion.HouseBj:
         print("")
-        print(f'Player 1: {render_hand(state.player.active_hand().cards)}= {player_total}')
+        print(f'Player 1: {render_hand(hand.cards)}= {player_total}')
         print(f'BLACKJACK! {render_hand(state.dealer.hand.cards)}= {house_total} \nHouse wins!')
         print("")
         return
     if conclusion is Conclusion.PlayerBust:
         print("")
         print(f'The House: {render_hand(state.dealer.hand.cards)}= {house_total}')
-        print(f'You Bust! {render_hand(state.player.active_hand().cards)}= {player_total} \nHouse Wins!')
+        print(f'You Bust! {render_hand(hand.cards)}= {player_total} \nHouse Wins!')
         print("")
         return
     if conclusion is Conclusion.HouseBust:
         print("")
-        print(f'Player 1: {render_hand(state.player.active_hand().cards)}= {player_total}')
+        print(f'Player 1: {render_hand(hand.cards)}= {player_total}')
         print(f'House Busts: {render_hand(state.dealer.hand.cards)}= {house_total} \nYou Win!')
         print("")
         return
     if conclusion is Conclusion.HouseWin:
         print("")
         print(f'The House: {render_hand(state.dealer.hand.cards)}= {house_total}')
-        print(f'Player 1: {render_hand(state.player.active_hand().cards)}= {player_total} \n House Wins!')
+        print(f'Player 1: {render_hand(hand.cards)}= {player_total} \n House Wins!')
         print("")
         return
     if conclusion is Conclusion.PlayerWin:
         print("")
         print(f'The House: {render_hand(state.dealer.hand.cards)}= {house_total}')
-        print(f'Player 1: {render_hand(state.player.active_hand().cards)}= {player_total} \n YOU Win!')
+        print(f'Player 1: {render_hand(hand.cards)}= {player_total} \n YOU Win!')
         print("")
         return
     raise ValueError(f'Winner Inconclusive for {conclusion}')
@@ -64,8 +64,10 @@ def display_winner(conclusion: Conclusion, state: GameState):
 
 def get_hit_or_stay(hand) -> Play:
     total = hand_total(hand.cards)
-    response = input(f'Your Total is {total}.'
+    response = input(f'Player 1: {render_hand(hand.cards)}\n'
+                     f'Your Total is {total}.'
                      f' would you like to Hit? ("y" or "n"): ')
+    print('')
     play = parse_play(response)
     if play:
         return play
@@ -85,11 +87,6 @@ def check_play_again():
         else:
             print('Please Choose "y" or "n"!')
             continue
-
-
-def split_response_loop(state):
-    for hands in state.player.hands:
-        return split_response(hands)
 
 
 def split_response(state: GameState):
@@ -132,15 +129,20 @@ def main():
                 continue
             else:
                 break
+
         for hand in state.player.hands:
             hit_or_not = get_hit_or_stay(hand)
-            hit(hit_or_not, state)
-
+            hit(hit_or_not, state, hand)
+            while hit_or_not is Play.Hit:
+                hit_or_not = get_hit_or_stay(hand)
+                hit(hit_or_not, state, hand)
             if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:
                 continue
 
-            winner = get_winner(state)
-            display_winner(winner, state)
+        for hand in state.player.hands:
+            winner = get_winner(state, hand)
+            display_winner(winner, state, hand)
+            continue
 
         if check_play_again() is True:
             set_table(state, check_deck(state))
