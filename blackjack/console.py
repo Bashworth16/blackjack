@@ -1,7 +1,7 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, check_deck, set_table,
-    check_split, split_hand, Player, Dealer, card_point, check_for_bust
+    check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust
     )
 
 import random
@@ -64,6 +64,8 @@ def display_winner(conclusion: Conclusion, state: GameState, hand):
 
 def get_hit_or_stay(hand) -> Play:
     total = hand_total(hand.cards)
+    if check_blackjack_or_bust(hand) is Play.Stay:
+        return check_blackjack_or_bust(hand)
     response = input(f'Player 1: {render_hand(hand.cards)}\n'
                      f'Your Total is {total}.'
                      f' would you like to Hit? ("y" or "n"): ')
@@ -134,10 +136,9 @@ def main():
         for hand in state.player.hands:
             hit_or_not = get_hit_or_stay(hand)
             hit(hit_or_not, state, hand)
+            if has_blackjack(state.player.active_hand()):
+                break
             while hit_or_not is Play.Hit:
-                if check_for_bust(hand.cards) is True:
-                    print('BUSTED!\n')
-                    break
                 hit_or_not = get_hit_or_stay(hand)
                 hit(hit_or_not, state, hand)
                 if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:

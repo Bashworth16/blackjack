@@ -311,3 +311,12 @@ def check_for_bust(hand):
         return True
     else:
         return False
+
+
+def check_blackjack_or_bust(hand):
+    if has_blackjack(hand):
+        return Play.Stay
+    if check_for_bust(hand.cards) is True:
+        return Play.Stay
+    else:
+        return None
