@@ -1,7 +1,7 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, check_deck, set_table,
-    check_split, split_hand, Player, Dealer
+    check_split, split_hand, Player, Dealer, card_point, check_for_bust
     )
 
 import random
@@ -92,7 +92,8 @@ def check_play_again():
 def split_response(state: GameState):
     split = input(f'You have a split opportunity:'
                   f' {render_hand(state.player.active_hand().cards)} '
-                  f'({hand_total(state.player.active_hand().cards)}Points).\n '
+                  f'({(card_point(state.player.active_hand().cards[0])+card_point(state.player.active_hand().cards[1]))}'
+                  f' Points).\n '
                   f'Would you like to split your hand? ("y" or "n"): ')
     return split
 
@@ -116,12 +117,6 @@ def main():
     while True:
         show_cards(state)
 
-        if check_split(state):
-            split = split_response(state)
-            split_bool = check_split_response(split)
-            split_hand(split_bool, state)
-            show_cards(state)
-
         if has_blackjack(state.player.active_hand()):
             print(f'YOU GOT A BLACKJACK!')
             if check_play_again() is True:
@@ -130,14 +125,23 @@ def main():
             else:
                 break
 
+        if check_split(state):
+            split = split_response(state)
+            split_bool = check_split_response(split)
+            split_hand(split_bool, state)
+            show_cards(state)
+
         for hand in state.player.hands:
             hit_or_not = get_hit_or_stay(hand)
             hit(hit_or_not, state, hand)
             while hit_or_not is Play.Hit:
+                if check_for_bust(hand.cards) is True:
+                    print('BUSTED!\n')
+                    break
                 hit_or_not = get_hit_or_stay(hand)
                 hit(hit_or_not, state, hand)
-            if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:
-                continue
+                if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:
+                    continue
 
         for hand in state.player.hands:
             winner = get_winner(state, hand)
