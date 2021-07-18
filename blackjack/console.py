@@ -137,6 +137,33 @@ def hit_loop(state):
                 continue
 
 
+def initial_assessment(state: GameState):
+    if check_blackjack_or_bust(state.player.active_hand()):
+        display_winner(get_winner(state, state.player.active_hand()),
+                       state, state.player.active_hand())
+        if check_play_again():
+            set_table(state, check_deck(state))
+            return
+        else:
+            return
+
+
+def should_split_or_not(state: GameState):
+    if check_split(state) and split_response(state):
+        split_hand(state)
+        show_cards(state)
+        return
+    else:
+        return
+
+
+def determine_hand_conclusions(state: GameState):
+    for hand in state.player.hands:
+        winner = get_winner(state, hand)
+        display_winner(winner, state, hand)
+    return
+
+
 def main():
     state = GameState(deck=make_deck(), player=Player(), dealer=Dealer())
     random.shuffle(state.deck)
@@ -144,27 +171,10 @@ def main():
 
     while True:
         show_cards(state)
-
-        if check_blackjack_or_bust(state.player.active_hand()):
-            display_winner(get_winner(state, state.player.active_hand()),
-                           state, state.player.active_hand())
-            if check_play_again():
-                set_table(state, check_deck(state))
-                continue
-            else:
-                break
-
-        if check_split(state) and split_response(state):
-            split_hand(state)
-            show_cards(state)
-
+        initial_assessment(state)
+        should_split_or_not(state)
         hit_loop(state)
-
-        for hand in state.player.hands:
-            winner = get_winner(state, hand)
-            display_winner(winner, state, hand)
-            continue
-
+        determine_hand_conclusions(state)
         if check_play_again() is True:
             set_table(state, check_deck(state))
             continue
