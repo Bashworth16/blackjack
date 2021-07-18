@@ -282,14 +282,13 @@ def set_table(state: GameState, deck_check):
 
 
 # For split_hand feature...
-def split_hand(split_bool: bool, state: GameState):
-    if split_bool:
-        new_hand = Hand()
-        split_card = state.player.active_hand().cards.pop(1)
-        new_hand.cards.append(split_card)
-        state.player.hands.append(new_hand)
-        for hands in state.player.hands:
-            hands.cards.append(state.deal())
+def split_hand(state: GameState):
+    new_hand = Hand()
+    split_card = state.player.active_hand().cards.pop(1)
+    new_hand.cards.append(split_card)
+    state.player.hands.append(new_hand)
+    for hands in state.player.hands:
+        hands.cards.append(state.deal())
 
 
 def check_split(state):

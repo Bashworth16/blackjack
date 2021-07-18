@@ -1,7 +1,7 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, check_deck, set_table,
-    check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust
+    check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust
     )
 
 import random
@@ -66,15 +66,17 @@ def get_hit_or_stay(hand) -> Play:
     total = hand_total(hand.cards)
     if check_blackjack_or_bust(hand) is Play.Stay:
         return check_blackjack_or_bust(hand)
-    response = input(f'Player 1: {render_hand(hand.cards)}\n'
-                     f'Your Total is {total}.'
-                     f' would you like to Hit? ("y" or "n"): ')
-    print('')
-    play = parse_play(response)
-    if play:
-        return play
-    else:
-        print("Please choose 'y' or 'n'.")
+    while True:
+        response = input(f'Player 1: {render_hand(hand.cards)}\n'
+                         f'Your Total is {total}.'
+                         f' would you like to Hit? ("y" or "n"): ')
+        print('')
+        play = parse_play(response)
+        if play is None:
+            print("Please choose 'y' or 'n'.")
+            continue
+        else:
+            return play
 
 
 def check_play_again():
@@ -92,23 +94,47 @@ def check_play_again():
 
 
 def split_response(state: GameState):
-    split = input(f'You have a split opportunity:'
-                  f' {render_hand(state.player.active_hand().cards)} '
-                  f'({(card_point(state.player.active_hand().cards[0])+card_point(state.player.active_hand().cards[1]))}'
-                  f' Points).\n '
-                  f'Would you like to split your hand? ("y" or "n"): ')
-    return split
+    while True:
+        split = input(f'You have a split opportunity:'
+                      f' {render_hand(state.player.active_hand().cards)} '
+                      f'({(card_point(state.player.active_hand().cards[0])+card_point(state.player.active_hand().cards[1]))}'
+                      f' Points).\n '
+                      f'Would you like to split your hand? ("y" or "n"): ')
+        if check_split_response(split) is None:
+            print('Please Choose "y" or "n"!')
+            continue
+        else:
+            return check_split_response(split)
 
 
 def check_split_response(split):
-    while True:
-        if split == 'y':
-            return True
-        elif split == 'n':
-            return False
-        else:
-            print('Please Choose "y" or "n"!')
-            continue
+    if split == 'y':
+        return True
+    elif split == 'n':
+        return False
+    else:
+        return None
+
+
+def blackjack_or_bust_io(hand):
+    if has_blackjack(hand):
+        print('You Got A Blackjack!\n')
+        return None
+    if check_for_bust(hand.cards):
+        print('BUSTED!\n')
+        return None
+
+
+def hit_loop(state):
+    for hand in state.player.hands:
+        hit_or_not = get_hit_or_stay(hand)
+        hit(hit_or_not, state, hand)
+        blackjack_or_bust_io(hand)
+        while hit_or_not is Play.Hit:
+            hit_or_not = get_hit_or_stay(hand)
+            hit(hit_or_not, state, hand)
+            if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:
+                continue
 
 
 def main():
@@ -119,30 +145,20 @@ def main():
     while True:
         show_cards(state)
 
-        if has_blackjack(state.player.active_hand()):
-            print(f'YOU GOT A BLACKJACK!')
-            if check_play_again() is True:
+        if check_blackjack_or_bust(state.player.active_hand()):
+            display_winner(get_winner(state, state.player.active_hand()),
+                           state, state.player.active_hand())
+            if check_play_again():
                 set_table(state, check_deck(state))
                 continue
             else:
                 break
 
-        if check_split(state):
-            split = split_response(state)
-            split_bool = check_split_response(split)
-            split_hand(split_bool, state)
+        if check_split(state) and split_response(state):
+            split_hand(state)
             show_cards(state)
 
-        for hand in state.player.hands:
-            hit_or_not = get_hit_or_stay(hand)
-            hit(hit_or_not, state, hand)
-            if has_blackjack(state.player.active_hand()):
-                break
-            while hit_or_not is Play.Hit:
-                hit_or_not = get_hit_or_stay(hand)
-                hit(hit_or_not, state, hand)
-                if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:
-                    continue
+        hit_loop(state)
 
         for hand in state.player.hands:
             winner = get_winner(state, hand)
