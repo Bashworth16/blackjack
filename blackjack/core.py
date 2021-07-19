@@ -266,8 +266,8 @@ def check_deck(state):
         return False
 
 
-def set_table(state: GameState, deck_check):
-    if deck_check is True:
+def set_table(state: GameState):
+    if check_deck(state) is True:
         state.deck = make_deck()
         state.player = Player()
         state.dealer = Dealer()

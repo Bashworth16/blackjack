@@ -1,6 +1,6 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
-    initial_deal, has_blackjack, hit, get_winner, check_deck, set_table,
+    initial_deal, has_blackjack, hit, get_winner, set_table,
     check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust
     )
 
@@ -142,7 +142,7 @@ def initial_assessment(state: GameState):
         display_winner(get_winner(state, state.player.active_hand()),
                        state, state.player.active_hand())
         if check_play_again():
-            set_table(state, check_deck(state))
+            set_table(state)
             return
         else:
             return
@@ -175,8 +175,8 @@ def main():
         should_split_or_not(state)
         hit_loop(state)
         determine_hand_conclusions(state)
-        if check_play_again() is True:
-            set_table(state, check_deck(state))
+        if check_play_again():
+            set_table(state)
             continue
         else:
             break
