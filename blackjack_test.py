@@ -1,4 +1,5 @@
-from blackjack.core import Card, Suit, Rank, card_point, hand_total, get_winner, GameState, Conclusion
+from blackjack.core import Card, Suit, Rank, card_point, hand_total,\
+    get_winner, GameState, Conclusion
 
 
 A = Card(Rank.Ace, Suit.Spades)
