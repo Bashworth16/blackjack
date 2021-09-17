@@ -52,11 +52,30 @@ class Card:
         return f"<Card({self.rank.name}, {self.suit.name})>"
 
 
+class Hand:
+    def __init__(self):
+        self.cards: List[Card] = []
+
+
+class Player:
+    def __init__(self):
+        self.hands = [Hand()]
+        self.current_hand_index = 0
+
+    def active_hand(self):
+        return self.hands[self.current_hand_index]
+
+
+class Dealer:
+    def __init__(self):
+        self.hand = Hand()
+
+
 class GameState:
-    def __init__(self, deck: List[Card], player_hand: List[Card], dealer_hand: List[Card]):
+    def __init__(self, deck: List[Card], player: Player, dealer: Dealer):
         self.deck = deck
-        self.player_hand = player_hand
-        self.dealer_hand = dealer_hand
+        self.player = player
+        self.dealer = dealer
 
     def deal(self):
         """Removes and returns first card of the deck."""
@@ -73,25 +92,18 @@ def make_deck():
 
 
 def house_hit(state: GameState):
-    while hand_total(state.dealer_hand) <= 17:
-        state.dealer_hand.append(state.deal())
+    while hand_total(state.dealer.hand.cards) <= 17:
+        state.dealer.hand.cards.append(state.deal())
     return
 
 
-def hit_player(state: GameState):
-    return state.player_hand.append(state.deal())
+def hit_player(hand: Hand, state: GameState):
+    return hand.cards.append(state.deal())
 
 
-def hit_split(state: GameState):
-    return state.player_split.append(state.deal())
-
-
-def hit(hit_response, state: GameState):
+def hit(hit_response, state: GameState, hand):
     if hit_response == Play.Hit:
-        hit_player(state)
-        return
-    if hit_response == Play.Split:
-        hit_split(state)
+        hit_player(hand, state)
         return
     if hit_response == Play.Stay:
         house_hit(state)
@@ -113,11 +125,11 @@ def hand_total(hand):
     return total
 
 
-def initial_deal(state):
-    state.player_hand.append(state.deal())
-    state.dealer_hand.append(state.deal())
-    state.player_hand.append(state.deal())
-    state.dealer_hand.append(state.deal())
+def initial_deal(state: GameState):
+    state.player.active_hand().cards.append(state.deal())
+    state.dealer.hand.cards.append(state.deal())
+    state.player.active_hand().cards.append(state.deal())
+    state.dealer.hand.cards.append(state.deal())
     return
 
 
@@ -176,7 +188,7 @@ def render_hand(x):
 def render_dealer(x):
     first_card = "🂠 "
     ren_hand = ''
-    for card in x[1:]:
+    for card in x.cards[1:]:
         ren_hand += render_card(render_rank(card), render_suit(card))
     return first_card + ren_hand
 
@@ -211,10 +223,9 @@ def card_point(x):
         return 10
 
 
-def get_winner(state: GameState) -> Conclusion:
-    house_total = hand_total(state.dealer_hand)
-    # for hand in state.nested_hands:
-    player_total = hand_total(state.player_hand)
+def get_winner(state: GameState, hand) -> Conclusion:
+    house_total = hand_total(state.dealer.hand.cards)
+    player_total = hand_total(hand.cards)
     if player_total == house_total:
         return Conclusion.Push
     if player_total > 21:
@@ -232,18 +243,16 @@ def get_winner(state: GameState) -> Conclusion:
     raise ValueError(f'Winner Inconclusive for {player_total} vs {house_total}')
 
 
-def parse_play(s: str, hand: list, state: GameState) -> Optional[Play]:
-    if s == 'y' and hand == state.player_hand:
+def parse_play(s: str) -> Optional[Play]:
+    if s == 'y':
         return Play.Hit
-    if s == 'y' and hand == state.player_split:
-        return Play.Split
     if s == 'n':
         return Play.Stay
     return None
 
 
-def has_blackjack(hand: List[Card]):
-    total = hand_total(hand)
+def has_blackjack(hand: Hand):
+    total = hand_total(hand.cards)
     if total == 21:
         return True
     else:
@@ -257,53 +266,42 @@ def check_deck(state):
         return False
 
 
-def set_table(state, deck_check):
-    if deck_check is True:
+def set_table(state: GameState):
+    if check_deck(state) is True:
         state.deck = make_deck()
-        state.player_hand = []
-        state.dealer_hand = []
+        state.player = Player()
+        state.dealer = Dealer()
         random.shuffle(state.deck)
         initial_deal(state)
         return
     else:
-        state.player_hand = []
-        state.dealer_hand = []
+        state.player = Player()
+        state.dealer = Dealer()
         initial_deal(state)
         return
 
 
 # For split_hand feature...
-def split_hand(x, state):
-    if len(state.nested_hands) > 1:
-        return
-    elif x is True:
-        split_card = state.player_hand.pop(1)
-        state.player_split.append(split_card)
-        state.nested_hands = [state.player_hand, state.player_split]
-        return Play.Split
-    else:
-        return
-
-# For split_hand feature...
-def check_split_response(split):
-    while True:
-        if split == 'y':
-            return True
-        elif split == 'n':
-            return False
-        else:
-            print('Please Choose "y" or "n"!')
-            continue
+def split_hand(state: GameState):
+    new_hand = Hand()
+    split_card = state.player.active_hand().cards.pop(1)
+    new_hand.cards.append(split_card)
+    state.player.hands.append(new_hand)
+    for hands in state.player.hands:
+        hands.cards.append(state.deal())
 
 
-# For split_hand feature...
 def check_split(state):
-    if len(state.nested_hands) > 1:
+    if len(state.player.active_hand().cards) > 2:
         return False
-    if card_point(state.player_hand[0]) == card_point(state.player_hand[1]):
-        return True
-    else:
+    if len(state.player.hands) > 1:
         return False
+    for hands in state.player.hands:
+        if card_point(hands.cards[1]) == \
+                card_point(hands.cards[0]):
+            return True
+        else:
+            return False
 
 
 # For split_hand feature...
@@ -312,3 +310,12 @@ def check_for_bust(hand):
         return True
     else:
         return False
+
+
+def check_blackjack_or_bust(hand):
+    if has_blackjack(hand):
+        return Play.Stay
+    if check_for_bust(hand.cards) is True:
+        return Play.Stay
+    else:
+        return None
