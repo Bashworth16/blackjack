@@ -168,9 +168,14 @@ def main():
     state = GameState(deck=make_deck(), player=Player(), dealer=Dealer())
     random.shuffle(state.deck)
     initial_deal(state)
+    coin_bag = state.player.make_coin_bag()
 
     while True:
         show_cards(state)
+        
+        # CHANGE LATER
+        print(f'Coins: {coin_bag}')
+        
         initial_assessment(state)
         should_split_or_not(state)
         hit_loop(state)
