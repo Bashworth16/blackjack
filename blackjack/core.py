@@ -57,8 +57,7 @@ class Hand:
         self.cards: List[Card] = []
 
 
-class Coin(enum.Enum):
-    Coin = enum.auto()
+
 
 
 class Player:
@@ -67,10 +66,7 @@ class Player:
         self.current_hand_index = 0
         self.coins = [Coin(1)]
 
-    def make_coin_bag(self):
-        while self.coins.count(Coin) < 100:
-            self.coins.append(Coin)
-        return list.count(self.coins, Coin)
+
 
     def active_hand(self):
         return self.hands[self.current_hand_index]
