@@ -6,6 +6,10 @@ from core import (
 
 import random
 
+def show_coins(state: GameState):
+    coin_count = state.player.make_coin_bag()
+    return print(f'Coins: {coin_count}')
+
 
 def show_cards(state: GameState):
     for hands in state.player.hands:
