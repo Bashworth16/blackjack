@@ -11,7 +11,7 @@ def show_coins(state: GameState):
     return print(f'Coins: {coin_count}')
 
 
-def show_cards(state: GameState):
+def show_player_stats(state: GameState):
     for hands in state.player.hands:
         print(f'\nPlayer 1: {render_hand(hands.cards)}')
     print(f'The House: {render_dealer(state.dealer.hand)}\n')
@@ -131,6 +131,7 @@ def blackjack_or_bust_io(hand):
 
 def hit_loop(state):
     for hand in state.player.hands:
+        show_coins(state)
         hit_or_not = get_hit_or_stay(hand)
         hit(hit_or_not, state, hand)
         blackjack_or_bust_io(hand)
@@ -155,7 +156,7 @@ def initial_assessment(state: GameState):
 def should_split_or_not(state: GameState):
     if check_split(state) and split_response(state):
         split_hand(state)
-        show_cards(state)
+        show_player_stats(state)
         return
     else:
         return
@@ -174,7 +175,7 @@ def main():
     initial_deal(state)
 
     while True:
-        show_cards(state)
+        show_player_stats(state)
         initial_assessment(state)
         should_split_or_not(state)
         hit_loop(state)
