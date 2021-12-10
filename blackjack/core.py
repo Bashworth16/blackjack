@@ -329,3 +329,24 @@ def check_blackjack_or_bust(hand):
         return Play.Stay
     else:
         return None
+
+
+def check_bet(bet, coins):
+    if bet > 0 < coins:
+        return True
+    if not bet > 0 < coins:
+        return False
+
+
+def bet_tally(bet, state: GameState):
+    conclusion = get_winner(state, state.player.active_hand())
+    if Conclusion == Conclusion.PlayerBj or Conclusion.PlayerWin or Conclusion.HouseBust:
+        while bet > 0:
+            state.player.coins.append(Coin)
+        return state.player.coins
+    if conclusion == Conclusion.HouseBj or Conclusion.HouseWin or Conclusion.PlayerBust:
+        while bet > 0:
+            state.player.coins.remove(Coin)
+        return state.player.coins
+    if conclusion == Conclusion.Push:
+        return state.player.coins

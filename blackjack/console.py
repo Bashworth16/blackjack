@@ -1,14 +1,14 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, set_table,
-    check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust
+    check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust, check_bet, bet_tally,
     )
 
 import random
 
-def show_coins(state: GameState):
-    coin_count = state.player.make_coin_bag()
-    return print(f'Coins: {coin_count}')
+
+def show_coins(coins):
+    return print(f'Coins: {coins}')
 
 
 def show_player_stats(state: GameState):
@@ -129,9 +129,11 @@ def blackjack_or_bust_io(hand):
         return None
 
 
-def hit_loop(state):
+def hit_loop(state, coin_bag):
     for hand in state.player.hands:
-        show_coins(state)
+        show_coins(coin_bag)
+        bet = get_bet()
+        bet_proc(bet, coin_bag)
         hit_or_not = get_hit_or_stay(hand)
         hit(hit_or_not, state, hand)
         blackjack_or_bust_io(hand)
@@ -140,6 +142,7 @@ def hit_loop(state):
             hit(hit_or_not, state, hand)
             if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:
                 continue
+        return bet
 
 
 def initial_assessment(state: GameState):
@@ -169,17 +172,37 @@ def determine_hand_conclusions(state: GameState):
     return
 
 
+def get_bet():
+    bet = int(input('What would you like to bet?: '))
+    return bet
+
+
+def io_check_bet(bet, coin_bag):
+    if check_bet(bet, coin_bag) is False:
+        print(f'Please enter a bet between 0 - {coin_bag}.')
+        get_bet()
+    if check_bet(bet, coin_bag) is True:
+        return bet
+
+
+def bet_proc(bet, coins_bag):
+    io_check_bet(bet, coins_bag)
+    return
+
+
 def main():
     state = GameState(deck=make_deck(), player=Player(), dealer=Dealer())
     random.shuffle(state.deck)
     initial_deal(state)
+    coin_bag = state.player.make_coin_bag()
 
     while True:
         show_player_stats(state)
         initial_assessment(state)
         should_split_or_not(state)
-        hit_loop(state)
+        bet = hit_loop(state, coin_bag)
         determine_hand_conclusions(state)
+        coin_bag = bet_tally(bet, state)
         if check_play_again():
             set_table(state)
             continue
