@@ -68,9 +68,9 @@ class Player:
         self.coins = [Coin(1)]
 
     def make_coin_bag(self):
-        while self.coins.count(Coin) < 100:
-            self.coins.append(Coin)
-        return list.count(self.coins, Coin)
+        while self.coins.count(Coin.Coin) < 100:
+            self.coins.append(Coin.Coin)
+        return list.count(self.coins, Coin.Coin)
 
     def active_hand(self):
         return self.hands[self.current_hand_index]
@@ -331,22 +331,24 @@ def check_blackjack_or_bust(hand):
         return None
 
 
-def check_bet(bet, coins):
-    if bet > 0 < coins:
+def check_bet(bet, state):
+    if 0 < len(bet) < len(state.player.coins):
         return True
-    if not bet > 0 < coins:
+    if len(bet) < 0 or len(bet) > len(state.player.coins):
         return False
 
 
 def bet_tally(bet, state: GameState):
     conclusion = get_winner(state, state.player.active_hand())
     if Conclusion == Conclusion.PlayerBj or Conclusion.PlayerWin or Conclusion.HouseBust:
-        while bet > 0:
-            state.player.coins.append(Coin)
-        return state.player.coins
+        if len(bet) > 0:
+            for each in bet:
+                state.player.coins.append(Coin(each))
+            return state.player.coins
     if conclusion == Conclusion.HouseBj or Conclusion.HouseWin or Conclusion.PlayerBust:
-        while bet > 0:
-            state.player.coins.remove(Coin)
-        return state.player.coins
+        if len(bet) > 0:
+            for each in bet:
+                state.player.coins.remove(Coin(each))
+            return state.player.coins
     if conclusion == Conclusion.Push:
         return state.player.coins
