@@ -2,7 +2,7 @@ from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, set_table,
     check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust, check_bet, bet_tally,
-    Coin)
+    Coin, coin_bust)
 
 import random
 
@@ -210,6 +210,7 @@ def main():
         print(f'coins: {len(state.player.coins)}')
         if check_play_again():
             set_table(state, coin_bag)
+            coin_bust(coin_bag, state)
             continue
         else:
             break

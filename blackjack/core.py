@@ -276,7 +276,7 @@ def check_deck(state):
         return False
 
 
-def set_table(state: GameState, cb):
+def set_table(state: GameState, cb=list):
     if check_deck(state) is True:
         state.deck = make_deck()
         state.player = Player()
@@ -353,3 +353,11 @@ def bet_tally(bet, state: GameState):
         return state.player.coins
     else:
         return state.player.coins
+
+
+def coin_bust(coin_bag, state: GameState):
+    if len(coin_bag) is 0:
+        coin_bag = state.player.make_coin_bag()
+        return coin_bag
+    else:
+        return coin_bag
