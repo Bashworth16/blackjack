@@ -5,41 +5,68 @@ from typing import List, Optional
 
 
 class Conclusion(enum.Enum):
+    # noinspection PyArgumentList
     Push = enum.auto()
+    # noinspection PyArgumentList
     PlayerBj = enum.auto()
+    # noinspection PyArgumentList
     HouseBj = enum.auto()
+    # noinspection PyArgumentList
     PlayerBust = enum.auto()
+    # noinspection PyArgumentList
     HouseBust = enum.auto()
+    # noinspection PyArgumentList
     PlayerWin = enum.auto()
+    # noinspection PyArgumentList
     HouseWin = enum.auto()
 
 
 class Play(enum.Enum):
+    # noinspection PyArgumentList
     Hit = enum.auto()
+    # noinspection PyArgumentList
     Stay = enum.auto()
+    # noinspection PyArgumentList
     Split = enum.auto()
 
 
 class Suit(enum.Enum):
+    # noinspection PyArgumentList
     Clubs = enum.auto()
+    # noinspection PyArgumentList
     Hearts = enum.auto()
+    # noinspection PyArgumentList
     Spades = enum.auto()
+    # noinspection PyArgumentList
     Diamonds = enum.auto()
 
 
 class Rank(enum.Enum):
+    # noinspection PyArgumentList
     Ace = enum.auto()
+    # noinspection PyArgumentList
     Two = enum.auto()
+    # noinspection PyArgumentList
     Three = enum.auto()
+    # noinspection PyArgumentList
     Four = enum.auto()
+    # noinspection PyArgumentList
     Five = enum.auto()
+    # noinspection PyArgumentList
     Six = enum.auto()
+    # noinspection PyArgumentList
     Seven = enum.auto()
+    # noinspection PyArgumentList
     Eight = enum.auto()
+    # noinspection PyArgumentList
     Nine = enum.auto()
+    # noinspection PyArgumentList
     Ten = enum.auto()
+    # noinspection PyArgumentList
     Jack = enum.auto()
+    # noinspection PyArgumentList
     Queen = enum.auto()
+    # noinspection PyArgumentList
     King = enum.auto()
 
 
@@ -57,10 +84,21 @@ class Hand:
         self.cards: List[Card] = []
 
 
+class Coin(enum.Enum):
+    # noinspection PyArgumentList
+    Coin = enum.auto()
+
+
 class Player:
     def __init__(self):
         self.hands = [Hand()]
         self.current_hand_index = 0
+        self.coins = [Coin(1)]
+
+    def make_coin_bag(self):
+        while self.coins.count(Coin.Coin) < 100:
+            self.coins.append(Coin.Coin)
+        return list.count(self.coins, Coin.Coin)
 
     def active_hand(self):
         return self.hands[self.current_hand_index]
@@ -266,18 +304,20 @@ def check_deck(state):
         return False
 
 
-def set_table(state: GameState):
+def set_table(state: GameState, cb=list):
     if check_deck(state) is True:
         state.deck = make_deck()
         state.player = Player()
         state.dealer = Dealer()
         random.shuffle(state.deck)
         initial_deal(state)
+        state.player.coins = cb
         return
     else:
         state.player = Player()
         state.dealer = Dealer()
         initial_deal(state)
+        state.player.coins = cb
         return
 
 
@@ -319,3 +359,47 @@ def check_blackjack_or_bust(hand):
         return Play.Stay
     else:
         return None
+
+
+def check_bet(bet, state):
+    if 0 < len(bet) < len(state.player.coins):
+        return True
+    if len(bet) < 0 or len(bet) > len(state.player.coins):
+        return False
+
+
+def bet_tally(bet, state: GameState):
+    lose = [Conclusion.HouseBj, Conclusion.HouseWin, Conclusion.PlayerBust]
+    win = [Conclusion.PlayerBj, Conclusion.PlayerWin, Conclusion.HouseBust]
+    conclusion = get_winner(state, state.player.active_hand())
+    for each in lose:
+        if conclusion is each:
+            for coin in bet:
+                state.player.coins.remove(Coin(coin))
+            return state.player.coins
+        else:
+            pass
+    for each in win:
+        if conclusion is each:
+            for coin in bet:
+                state.player.coins.append(Coin(coin))
+            return state.player.coins
+        else:
+            pass
+    return state.player.coins
+
+
+def coin_bust(coin_bag, state: GameState):
+    if len(coin_bag) is 0:
+        coin_bag = state.player.make_coin_bag()
+        return coin_bag
+    else:
+        return coin_bag
+
+
+def blackjack_prize(player1):
+    count = 500
+    while count != 0:
+        count -= 1
+        player1.append(Coin.Coin)
+    return player1

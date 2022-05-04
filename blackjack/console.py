@@ -1,13 +1,17 @@
 from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, set_table,
-    check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust
-    )
+    check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust, check_bet, bet_tally,
+    Coin, coin_bust, blackjack_prize)
 
 import random
 
 
-def show_cards(state: GameState):
+def show_coins(state):
+    print(f'Coins: {len(state.player.coins)}')
+
+
+def show_player_stats(state: GameState):
     for hands in state.player.hands:
         print(f'\nPlayer 1: {render_hand(hands.cards)}')
     print(f'The House: {render_dealer(state.dealer.hand)}\n')
@@ -127,6 +131,9 @@ def blackjack_or_bust_io(hand):
 
 def hit_loop(state):
     for hand in state.player.hands:
+        show_coins(state)
+        bet = get_bet()
+        bet_proc(bet, state)
         hit_or_not = get_hit_or_stay(hand)
         hit(hit_or_not, state, hand)
         blackjack_or_bust_io(hand)
@@ -135,23 +142,23 @@ def hit_loop(state):
             hit(hit_or_not, state, hand)
             if hit_or_not == Play.Hit and hand_total(state.player.active_hand().cards) < 21:
                 continue
+        return bet
 
 
-def initial_assessment(state: GameState):
+def initial_assessment(state: GameState, cb):
     if check_blackjack_or_bust(state.player.active_hand()):
         display_winner(get_winner(state, state.player.active_hand()),
                        state, state.player.active_hand())
-        if check_play_again():
-            set_table(state)
-            return
-        else:
-            return
+        cb = blackjack_prize(cb)
+        return set_table(state, cb)
+    else:
+        return
 
 
 def should_split_or_not(state: GameState):
     if check_split(state) and split_response(state):
         split_hand(state)
-        show_cards(state)
+        show_player_stats(state)
         return
     else:
         return
@@ -163,20 +170,49 @@ def determine_hand_conclusions(state: GameState):
         display_winner(winner, state, hand)
     return
 
+def get_bet():
+    bet = []
+    while True:
+        try:
+            coin_num = int(input('What would you like to bet?: '))
+            break
+        except ValueError:
+            print("Please enter a whole number for your bet.")
+    for each in range(coin_num):
+        bet.append(Coin.Coin)
+    return bet
+
+
+def io_check_bet(bet, state):
+    if check_bet(bet, state) is False:
+        print(f'Please enter a bet between 0 - {len(state.player.coins)}.')
+        get_bet()
+    if check_bet(bet, state) is True:
+        return bet
+
+
+def bet_proc(bet, state):
+    io_check_bet(bet, state)
+    return
+
 
 def main():
     state = GameState(deck=make_deck(), player=Player(), dealer=Dealer())
     random.shuffle(state.deck)
     initial_deal(state)
+    coin_bag = state.player.make_coin_bag()
 
     while True:
-        show_cards(state)
-        initial_assessment(state)
+        show_player_stats(state)
+        initial_assessment(state, coin_bag)
         should_split_or_not(state)
-        hit_loop(state)
+        bet = hit_loop(state)
         determine_hand_conclusions(state)
+        coin_bag = bet_tally(bet, state)
+        print(f'coins: {len(state.player.coins)}')
         if check_play_again():
-            set_table(state)
+            set_table(state, coin_bag)
+            coin_bust(coin_bag, state)
             continue
         else:
             break
