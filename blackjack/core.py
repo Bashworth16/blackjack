@@ -5,41 +5,68 @@ from typing import List, Optional
 
 
 class Conclusion(enum.Enum):
+    # noinspection PyArgumentList
     Push = enum.auto()
+    # noinspection PyArgumentList
     PlayerBj = enum.auto()
+    # noinspection PyArgumentList
     HouseBj = enum.auto()
+    # noinspection PyArgumentList
     PlayerBust = enum.auto()
+    # noinspection PyArgumentList
     HouseBust = enum.auto()
+    # noinspection PyArgumentList
     PlayerWin = enum.auto()
+    # noinspection PyArgumentList
     HouseWin = enum.auto()
 
 
 class Play(enum.Enum):
+    # noinspection PyArgumentList
     Hit = enum.auto()
+    # noinspection PyArgumentList
     Stay = enum.auto()
+    # noinspection PyArgumentList
     Split = enum.auto()
 
 
 class Suit(enum.Enum):
+    # noinspection PyArgumentList
     Clubs = enum.auto()
+    # noinspection PyArgumentList
     Hearts = enum.auto()
+    # noinspection PyArgumentList
     Spades = enum.auto()
+    # noinspection PyArgumentList
     Diamonds = enum.auto()
 
 
 class Rank(enum.Enum):
+    # noinspection PyArgumentList
     Ace = enum.auto()
+    # noinspection PyArgumentList
     Two = enum.auto()
+    # noinspection PyArgumentList
     Three = enum.auto()
+    # noinspection PyArgumentList
     Four = enum.auto()
+    # noinspection PyArgumentList
     Five = enum.auto()
+    # noinspection PyArgumentList
     Six = enum.auto()
+    # noinspection PyArgumentList
     Seven = enum.auto()
+    # noinspection PyArgumentList
     Eight = enum.auto()
+    # noinspection PyArgumentList
     Nine = enum.auto()
+    # noinspection PyArgumentList
     Ten = enum.auto()
+    # noinspection PyArgumentList
     Jack = enum.auto()
+    # noinspection PyArgumentList
     Queen = enum.auto()
+    # noinspection PyArgumentList
     King = enum.auto()
 
 
@@ -58,6 +85,7 @@ class Hand:
 
 
 class Coin(enum.Enum):
+    # noinspection PyArgumentList
     Coin = enum.auto()
 
 
@@ -341,18 +369,24 @@ def check_bet(bet, state):
 
 
 def bet_tally(bet, state: GameState):
+    lose = [Conclusion.HouseBj, Conclusion.HouseWin, Conclusion.PlayerBust]
+    win = [Conclusion.PlayerBj, Conclusion.PlayerWin, Conclusion.HouseBust]
     conclusion = get_winner(state, state.player.active_hand())
-    print(conclusion)
-    if conclusion is Conclusion.HouseBj or Conclusion.HouseWin or Conclusion.PlayerBust:
-        for each in bet:
-            state.player.coins.remove(Coin(each))
-        return state.player.coins
-    if conclusion is Conclusion.PlayerBj or Conclusion.PlayerWin or Conclusion.HouseBust:
-        for each in bet:
-            state.player.coins.append(Coin(each))
-        return state.player.coins
-    else:
-        return state.player.coins
+    for each in lose:
+        if conclusion is each:
+            for coin in bet:
+                state.player.coins.remove(Coin(coin))
+            return state.player.coins
+        else:
+            pass
+    for each in win:
+        if conclusion is each:
+            for coin in bet:
+                state.player.coins.append(Coin(coin))
+            return state.player.coins
+        else:
+            pass
+    return state.player.coins
 
 
 def coin_bust(coin_bag, state: GameState):
