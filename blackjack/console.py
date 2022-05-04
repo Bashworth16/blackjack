@@ -2,7 +2,7 @@ from core import (
     GameState, render_hand, render_dealer, Conclusion, hand_total, parse_play, Play, make_deck,
     initial_deal, has_blackjack, hit, get_winner, set_table,
     check_split, split_hand, Player, Dealer, card_point, check_blackjack_or_bust, check_for_bust, check_bet, bet_tally,
-    Coin, coin_bust)
+    Coin, coin_bust, blackjack_prize)
 
 import random
 
@@ -149,12 +149,10 @@ def initial_assessment(state: GameState, cb):
     if check_blackjack_or_bust(state.player.active_hand()):
         display_winner(get_winner(state, state.player.active_hand()),
                        state, state.player.active_hand())
-        if check_play_again():
-            cb = cb.append(Coin.Coin) * 10
-            set_table(state, cb)
-            return
-        else:
-            return
+        cb = blackjack_prize(cb)
+        return set_table(state, cb)
+    else:
+        return
 
 
 def should_split_or_not(state: GameState):
@@ -172,10 +170,14 @@ def determine_hand_conclusions(state: GameState):
         display_winner(winner, state, hand)
     return
 
-
 def get_bet():
-    coin_num = int(input('What would you like to bet?: '))
     bet = []
+    while True:
+        try:
+            coin_num = int(input('What would you like to bet?: '))
+            break
+        except ValueError:
+            print("Please enter a whole number for your bet.")
     for each in range(coin_num):
         bet.append(Coin.Coin)
     return bet

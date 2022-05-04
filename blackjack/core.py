@@ -395,3 +395,11 @@ def coin_bust(coin_bag, state: GameState):
         return coin_bag
     else:
         return coin_bag
+
+
+def blackjack_prize(player1):
+    count = 500
+    while count != 0:
+        count -= 1
+        player1.append(Coin.Coin)
+    return player1
