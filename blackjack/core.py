@@ -276,18 +276,20 @@ def check_deck(state):
         return False
 
 
-def set_table(state: GameState):
+def set_table(state: GameState, cb):
     if check_deck(state) is True:
         state.deck = make_deck()
         state.player = Player()
         state.dealer = Dealer()
         random.shuffle(state.deck)
         initial_deal(state)
+        state.player.coins = cb
         return
     else:
         state.player = Player()
         state.dealer = Dealer()
         initial_deal(state)
+        state.player.coins = cb
         return
 
 
@@ -340,15 +342,14 @@ def check_bet(bet, state):
 
 def bet_tally(bet, state: GameState):
     conclusion = get_winner(state, state.player.active_hand())
-    if Conclusion == Conclusion.PlayerBj or Conclusion.PlayerWin or Conclusion.HouseBust:
-        if len(bet) > 0:
-            for each in bet:
-                state.player.coins.append(Coin(each))
-            return state.player.coins
-    if conclusion == Conclusion.HouseBj or Conclusion.HouseWin or Conclusion.PlayerBust:
-        if len(bet) > 0:
-            for each in bet:
-                state.player.coins.remove(Coin(each))
-            return state.player.coins
-    if conclusion == Conclusion.Push:
+    print(conclusion)
+    if conclusion is Conclusion.HouseBj or Conclusion.HouseWin or Conclusion.PlayerBust:
+        for each in bet:
+            state.player.coins.remove(Coin(each))
+        return state.player.coins
+    if conclusion is Conclusion.PlayerBj or Conclusion.PlayerWin or Conclusion.HouseBust:
+        for each in bet:
+            state.player.coins.append(Coin(each))
+        return state.player.coins
+    else:
         return state.player.coins

@@ -145,12 +145,13 @@ def hit_loop(state):
         return bet
 
 
-def initial_assessment(state: GameState):
+def initial_assessment(state: GameState, cb):
     if check_blackjack_or_bust(state.player.active_hand()):
         display_winner(get_winner(state, state.player.active_hand()),
                        state, state.player.active_hand())
         if check_play_again():
-            set_table(state)
+            cb = cb.append(Coin.Coin) * 10
+            set_table(state, cb)
             return
         else:
             return
@@ -175,7 +176,7 @@ def determine_hand_conclusions(state: GameState):
 def get_bet():
     coin_num = int(input('What would you like to bet?: '))
     bet = []
-    for each in range(coin_num+1):
+    for each in range(coin_num):
         bet.append(Coin.Coin)
     return bet
 
@@ -197,18 +198,18 @@ def main():
     state = GameState(deck=make_deck(), player=Player(), dealer=Dealer())
     random.shuffle(state.deck)
     initial_deal(state)
-    state.player.make_coin_bag()
+    coin_bag = state.player.make_coin_bag()
 
     while True:
         show_player_stats(state)
-        initial_assessment(state)
+        initial_assessment(state, coin_bag)
         should_split_or_not(state)
         bet = hit_loop(state)
         determine_hand_conclusions(state)
-        state.player.coins = bet_tally(bet, state)
+        coin_bag = bet_tally(bet, state)
         print(f'coins: {len(state.player.coins)}')
         if check_play_again():
-            set_table(state)
+            set_table(state, coin_bag)
             continue
         else:
             break
